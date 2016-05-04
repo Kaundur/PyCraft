@@ -1,8 +1,6 @@
 import pyglet
 from pyglet.gl import *
-from noise import pnoise2, snoise2
 import pyclid
-
 
 import block
 
@@ -92,25 +90,6 @@ class Chunk:
         batch_pos = block.render_face(b_x, b_y, b_z, face, self.batch, self.textures.texture_main, texture_coords[face])
         self.batch_positions[(x, y, z, face)] = batch_pos
 
-    # # TODO - Pass through Block ID
-    # def _check_exposed_face(self, x, y, z, b_x, b_y, b_z):
-    #     if (x, y+1, z) not in self.blocks:
-    #         self._create_block_face(x, y, z, b_x, b_y, b_z, 0)
-    #     # Check bottom
-    #     if (x, y-1, z) not in self.blocks:
-    #         self._create_block_face(x, y, z, b_x, b_y, b_z, 1)
-    #
-    #     if (x+1, y, z) not in self.blocks:
-    #         self._create_block_face(x, y, z, b_x, b_y, b_z, 2)
-    #     if (x-1, y, z) not in self.blocks:
-    #         self._create_block_face(x, y, z, b_x, b_y, b_z, 3)
-    #
-    #     if (x, y, z-1) not in self.blocks:
-    #         self._create_block_face(x, y, z, b_x, b_y, b_z, 4)
-    #     if (x, y, z+1) not in self.blocks:
-    #         self._create_block_face(x, y, z, b_x, b_y, b_z, 5)
-    #
-
     def find_block(self, block_coords):
         local_coords = self._get_block_local_coords(block_coords)
         if local_coords in self.blocks:
@@ -130,29 +109,23 @@ class Chunk:
     def _update_surrounding_blocks(self, x, y, z):
         if (x-1, y, z) in self.blocks:
             self.blocks[(x-1, y, z)].clear_batch()
-            #self._clear_block_batch(x-1, y, z)
             self.create_batch_block(x-1, y, z)
         if (x+1, y, z) in self.blocks:
             self.blocks[(x+1, y, z)].clear_batch()
-            #self._clear_block_batch(x+1, y, z)
             self.create_batch_block(x+1, y, z)
 
         if (x, y-1, z) in self.blocks:
             self.blocks[(x, y-1, z)].clear_batch()
-            #self._clear_block_batch(x, y-1, z)
             self.create_batch_block(x, y-1, z)
         if (x, y+1, z) in self.blocks:
             self.blocks[(x, y+1, z)].clear_batch()
-            #self._clear_block_batch(x, y+1, z)
             self.create_batch_block(x, y+1, z)
 
         if (x, y, z-1) in self.blocks:
             self.blocks[(x, y, z-1)].clear_batch()
-            #self._clear_block_batch(x, y, z-1)
             self.create_batch_block(x, y, z-1)
         if (x, y, z+1) in self.blocks:
             self.blocks[(x, y, z+1)].clear_batch()
-            #self._clear_block_batch(x, y, z+1)
             self.create_batch_block(x, y, z+1)
 
     def _clear_block_batch(self, x, y, z):

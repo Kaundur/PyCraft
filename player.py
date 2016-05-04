@@ -14,7 +14,7 @@ class Player:
     def __init__(self, world):
         self.world = world
         self.player_height = 0.0
-        self.position = Vec3(16, 60, 16)
+        self.position = Vec3(16, 100, 16)
         # negative rotation is up
         # -90 up, 90 down
         self.rotation = Vec2(100, 10)
