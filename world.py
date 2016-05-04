@@ -22,6 +22,7 @@ class World:
         # Chunks around the player to generate
         self.generate_distance = 3
         self.chunks = {}
+        self.surface = {}
         # TODO - Add world constants. eg, grav
 
     def generate_world(self, position):
@@ -35,7 +36,6 @@ class World:
 
         render_rad = 3
         # y is up
-        surface = []
         for x in xrange(chunk_coords.x-render_rad, chunk_coords.x+render_rad+1):
             for z in xrange(chunk_coords.z-render_rad, chunk_coords.z+render_rad+1):
 
@@ -51,7 +51,7 @@ class World:
     def generate_surface(self, chunk_x, chunk_z):
         octaves = 10
         freq = 16.0 * octaves
-        surface = []
+        surface = {}
 
         real_pos_x = chunk_x*16
         real_pos_z = chunk_z*16
@@ -59,10 +59,9 @@ class World:
 
         highest_point = 0
         for local_x, x in enumerate(xrange(real_pos_x, real_pos_x + 16)):
-            surface.append([])
             for z in xrange(real_pos_z, real_pos_z + 16):
                 point = int((snoise3(x / freq, z / freq, self.seed, octaves) * 127.0 + 128.0)/scale)
-                surface[local_x].append(point)
+                surface[(x, z)] = point
 
                 if point > highest_point:
                     highest_point = point
