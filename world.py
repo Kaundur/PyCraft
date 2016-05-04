@@ -114,7 +114,7 @@ class World:
         if chunk_coords in self.chunks:
             chunk = self.chunks[chunk_coords]
             # Find block coordinates local to chunk
-            block_coords = (coords[0]-chunk_coords[0]*16, coords[1]-chunk_coords[1]*16, coords[2]-chunk_coords[2]*16)
+            block_coords = (coords[0], coords[1], coords[2])
             chunk.create_block(block_coords)
 
     def find_block(self, coords):

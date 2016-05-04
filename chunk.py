@@ -28,10 +28,9 @@ class Chunk:
                     real_z = z+self.position.z*16
                     if (self.position.y*16 + y) <= self.surface[(real_x, real_z)]:
                         # TODO - Real x, y, z to be passed in
-                        self.create_block((x, y, z), False)
+                        self.create_block((real_x, real_y, real_z), False)
         self._find_exposed_blocks()
 
-    # Doesnt need refactor
     def _find_exposed_blocks(self):
         for block_position in self.blocks.keys():
             x = block_position[0]
@@ -41,44 +40,31 @@ class Chunk:
 
     # TODO - Can be shortend
     def _create_exposed_face(self, x, y, z):
-
-        # Step towards refactor
-        world_x = x + self.position.x*16
-        world_y = y + self.position.y*16
-        world_z = z + self.position.z*16
-
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
 
         if (x, y+1, z) not in self.blocks:
-            self.blocks[(x, y, z)].add_face(world_x, world_y, world_z, 0, self.batch, self.textures.texture_main, texture_coords[0])
+            self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
         if (x, y-1, z) not in self.blocks:
-            self.blocks[(x, y, z)].add_face(world_x, world_y, world_z, 1, self.batch, self.textures.texture_main, texture_coords[1])
+            self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
 
         if (x+1, y, z) not in self.blocks:
-            self.blocks[(x, y, z)].add_face(world_x, world_y, world_z, 2, self.batch, self.textures.texture_main, texture_coords[2])
+            self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
         if (x-1, y, z) not in self.blocks:
-            self.blocks[(x, y, z)].add_face(world_x, world_y, world_z, 3, self.batch, self.textures.texture_main, texture_coords[3])
+            self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
 
         if (x, y, z-1) not in self.blocks:
-            self.blocks[(x, y, z)].add_face(world_x, world_y, world_z, 4, self.batch, self.textures.texture_main, texture_coords[4])
+            self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
         if (x, y, z+1) not in self.blocks:
-            self.blocks[(x, y, z)].add_face(world_x, world_y, world_z, 5, self.batch, self.textures.texture_main, texture_coords[5])
+            self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
 
     def create_block(self, coords, update=True):
         x, y, z = coords[0], coords[1], coords[2]
         if (x, y, z) not in self.blocks:
             # TODO - Needs lazy init
-
-            # TODO - Will need to be replaced
-            real_x = x + self.position.x * 16
-            real_y = y + self.position.y * 16
-            real_z = z + self.position.z * 16
-
-            # TODO - Replace blocks with real x, y, z
             # Select block id based on the depth from the surface
-            if (real_y + y) <= self.surface[(real_x, real_z)]-5:
+            if y <= self.surface[(x, z)]-5:
                 self.blocks[(x, y, z)] = block.Block(2)
-            elif (real_y + y) <= self.surface[(real_x, real_z)]-1:
+            elif y <= self.surface[(x, z)]-1:
                 self.blocks[(x, y, z)] = block.Block(0)
             else:
                 self.blocks[(x, y, z)] = block.Block(1)
@@ -133,7 +119,7 @@ class Chunk:
                 del self.batch_positions[(x, y, z, i)]
 
     def _get_block_local_coords(self, coords):
-        block_coords = (coords[0]-self.position.x*16, coords[1]-self.position.y*16, coords[2]-self.position.z*16)
+        block_coords = (coords[0], coords[1], coords[2])
         return block_coords
 
     def render(self):

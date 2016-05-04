@@ -94,9 +94,9 @@ def los_collision_short(world, player):
             cy = int(math.floor(sight_position.y/16))
             cz = int(math.floor(sight_position.z/16))
 
-            block_key = (int(math.floor(sight_position.x))-cx*16,
-                           int(math.floor(sight_position.y)+1)-cy*16-1,
-                           int(math.floor(sight_position.z))-cz*16)
+            block_key = (int(math.floor(sight_position.x)),
+                           int(math.floor(sight_position.y)+1)-1,
+                           int(math.floor(sight_position.z)))
             try:
                 chunk = world.chunks[cx, cy, cz]
                 if block_key != previous_block and block_key in chunk.blocks and chunk.blocks[block_key] is not None:
