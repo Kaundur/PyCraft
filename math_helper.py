@@ -34,48 +34,6 @@ def get_sight_vector(player):
     # Is this ok? generating an object all the time
     return pyclid.Vec3(dx, dy, dz)
 
-    # TODO - Think dy should be negative, since we invert the camera
-    return (dx, dy, dz)
-
-    # TODO - Delete the rest of this function?
-
-
-
-    theta, phi = player.rotation
-
-    # Polar to cartesian conversion - Remember Y is vertical
-    # Can be slip into two sets, the angle away from the vertical axis and the angle about the vertical axis
-    # FROM ABOVE - Theta
-    #       z - cos(theta)
-    #       |
-    #       |
-    # ------------x - sin(theta)
-    #       |
-    #       |
-    # In this case the angle theta is such that sin(theta) is +- 1 in the x axis and cos(theta) is +- 1 in the z axis
-    # As x axis is defined as forward with a rotation of 90 or 270 deg
-
-    # TODO - Check signs
-    dx = math.cos(math.radians(phi)) * math.sin(math.radians(theta))
-    dz = -math.cos(math.radians(phi)) * math.cos(math.radians(theta))
-
-
-    # Should be -1 straight down + 1 straight up
-    #   270deg down, 90 up
-    #   1.5pi,  0.5pi
-    #   1.5pi,  0.5pi
-    #   sin is 1/4 phase out from cos, therefore use sin for polar to cartesian conversion
-
-    # For x and z, this needs to be 1/4 out of phase so when looking forward the y component becomes 1
-    #  Therefore use cos
-    dy = math.sin(math.radians(phi))
-
-    return ([dx, dy, dz])
-    #normalized_vector = vector_normalize([dx, dy, dz])
-    #print normalized_vector
-    # TODO - Try just rounding and using ints, remember use tuples
-    #return normalized_vector
-
 
 def los_collision_short(world, player):
     # TODO - This should accept the sight vector and position, not the player
@@ -115,7 +73,7 @@ def los_collision_short(world, player):
         return None, None
 
 
-def point_in_poly(x,y,poly):
+def point_in_poly(x, y, poly):
     n = len(poly)
     inside = False
 
@@ -132,6 +90,7 @@ def point_in_poly(x,y,poly):
         p1x, p1y = p2x, p2y
 
     return inside
+
 
 def get_3d_menu_screen_coords(point):
         vm = (GLfloat * 16)()
@@ -181,34 +140,8 @@ def area_triangle(a, b, c):
     # https://en.wikipedia.org/wiki/Shoelace_formula
     return 0.5*(a[0]*b[1] + b[0]*c[1] + c[0]*a[1] - a[0]*c[1] - c[0]*b[1] - b[0]*a[1])
 
+
 def area_rect(a, b, c, d):
     # calculating from points, could be on a non-standard angle
     # shoelace_formula
     return 0.5*(a[0]*b[1] + b[0]*c[1] + c[0]*d[1] + d[0]*a[1] - a[1]*b[0] - b[1]*c[0] - c[1]*d[0] - d[1]*a[0])
-
-
-# TODO - REMOVE, is in pyclid # Maybe this should be a flat structure
-def matrix_mult_4d(A, B):
-    C = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-
-    C[0][0] = A[0][0]*B[0][0] + A[0][1]*B[1][0] + A[0][2]*B[2][0] + A[0][3]*B[3][0]
-    C[0][1] = A[0][0]*B[0][1] + A[0][1]*B[1][1] + A[0][2]*B[2][1] + A[0][3]*B[3][1]
-    C[0][2] = A[0][0]*B[0][2] + A[0][1]*B[1][2] + A[0][2]*B[2][2] + A[0][3]*B[3][2]
-    C[0][3] = A[0][0]*B[0][3] + A[0][1]*B[1][3] + A[0][2]*B[2][3] + A[0][3]*B[3][3]
-
-    C[1][0] = A[1][0]*B[0][0] + A[1][1]*B[1][0] + A[1][2]*B[2][0] + A[1][3]*B[3][0]
-    C[1][1] = A[1][0]*B[0][1] + A[1][1]*B[1][1] + A[1][2]*B[2][1] + A[1][3]*B[3][1]
-    C[1][2] = A[1][0]*B[0][2] + A[1][1]*B[1][2] + A[1][2]*B[2][2] + A[1][3]*B[3][2]
-    C[1][2] = A[1][0]*B[0][2] + A[1][1]*B[1][2] + A[1][2]*B[2][2] + A[1][3]*B[3][3]
-
-    C[2][0] = A[2][0]*B[0][0] + A[2][1]*B[1][0] + A[2][2]*B[2][0] + A[2][3]*B[3][0]
-    C[2][1] = A[2][0]*B[0][1] + A[2][1]*B[1][1] + A[2][2]*B[2][1] + A[2][3]*B[3][1]
-    C[2][2] = A[2][0]*B[0][2] + A[2][1]*B[1][2] + A[2][2]*B[2][2] + A[2][3]*B[3][2]
-    C[2][2] = A[2][0]*B[0][2] + A[2][1]*B[1][2] + A[2][2]*B[2][2] + A[2][3]*B[3][3]
-
-    C[3][0] = A[3][0]*B[0][0] + A[3][1]*B[1][0] + A[3][2]*B[3][0] + A[3][3]*B[3][0]
-    C[3][1] = A[3][0]*B[0][1] + A[3][1]*B[1][1] + A[3][2]*B[3][1] + A[3][3]*B[3][1]
-    C[3][2] = A[3][0]*B[0][2] + A[3][1]*B[1][2] + A[3][2]*B[3][2] + A[3][3]*B[3][2]
-    C[3][3] = A[3][0]*B[0][3] + A[3][1]*B[1][3] + A[3][2]*B[3][3] + A[3][3]*B[3][3]
-
-    return C
