@@ -1,5 +1,3 @@
-__author__ = 'Kaundur'
-
 from pyglet.window import key
 import pyglet
 import math

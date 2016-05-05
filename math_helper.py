@@ -1,6 +1,3 @@
-__author__ = 'Kaundur'
-
-
 import math
 from pyglet.gl import *
 import ctypes

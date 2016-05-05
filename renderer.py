@@ -1,5 +1,3 @@
-__author__ = 'Kaundur'
-
 from pyglet.gl import *
 
 
