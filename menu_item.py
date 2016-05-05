@@ -5,6 +5,7 @@ import math_helper
 import textures
 import block
 
+
 # TODO - This shouldn't draw anything
 class MenuItem:
     def __init__(self, x, y, z, side, active=False, function=None):

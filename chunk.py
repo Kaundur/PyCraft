@@ -6,7 +6,7 @@ import block
 
 
 class Chunk:
-    def __init__(self, x, y, z, surface, textures):
+    def __init__(self, x, y, z, surface, textures, world):
         self.blocks = {}
         self.blocks_new = {}
         self.batch_positions = {}
@@ -18,6 +18,7 @@ class Chunk:
         # TODO - Can we keep textures outside of the chunk
         self.textures = textures
         self.batch = pyglet.graphics.Batch()
+        self.world = world
 
     def generate_chunk_default(self):
         for x in xrange(self.CHUNK_SIZE.x):
@@ -36,10 +37,15 @@ class Chunk:
             x = block_position[0]
             y = block_position[1]
             z = block_position[2]
-            self._create_exposed_face(x, y, z)
+            # Put block location and chunk into the queue
+            # TODO - This queue can greatly be reduced by checking if the faces are exposed
+            # TODO - However, will require a rethink, as blocks may be updated while in the queue
+            # TODO - May be already handled by the immediate block update
+            self.world.block_generation_queue.put((self, x, y, z))
+            #self._create_exposed_face(x, y, z)
 
     # TODO - Can be shortend
-    def _create_exposed_face(self, x, y, z):
+    def create_exposed_face(self, x, y, z):
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
 
         if (x, y+1, z) not in self.blocks:
