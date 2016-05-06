@@ -27,41 +27,56 @@ class World:
 
     def generate_world(self, position):
 
-        # Position - Current player position
-        # Need to convert to chunk position
-        # Then generate chunks around the player
-
-        # TODO -  Could all of the blocks just be added to the queue
-        chunk_coords = self.find_chunk_coords(position)
-        render_rad = 3
         # y is up
-        for x in xrange(chunk_coords.x-render_rad, chunk_coords.x+render_rad+1):
-            for z in xrange(chunk_coords.z-render_rad, chunk_coords.z+render_rad+1):
+        # Spiral loop
+        # Start generation from player position
+        # Convert to chunk coords
+        x = int(position.x/16)
+        z = int(position.z/16)
 
+
+        surface, highest_point = self.generate_surface(x, z)
+        max_y_chunk = int(highest_point/16)+1
+        for y in range(max_y_chunk):
+            if (x, y, z) not in self.chunks:
+                self.new_chunk(x, y, z, surface)
+
+        r = 1
+        while r <= self.generate_distance:
+            while x < r:
+                x += 1
                 surface, highest_point = self.generate_surface(x, z)
-
-                # Find the highest chunk required for the current x, z chunk coordinates
                 max_y_chunk = int(highest_point/16)+1
                 for y in range(max_y_chunk):
                     if (x, y, z) not in self.chunks:
                         self.new_chunk(x, y, z, surface)
-        #
-        # for x in xrange(chunk_coords.x-self.generate_distance, chunk_coords.x+self.generate_distance+1):
-        #     for z in xrange(chunk_coords.z-self.generate_distance, chunk_coords.z+self.generate_distance+1):
-        #         # Quick test to see if this x, z section has been generated
-        #         # Would be nicer to directly test if its below the generate_distance but outside the render distance
-        #         # Or even better, just loop over the outside of the render distance
-        #         if (x, 0, z) not in self.chunks:
-        #
-        #             surface, highest_point = self.generate_surface(x, z)
-        #
-        #             # Find the highest chunk required for the current x, z chunk coordinates
-        #             max_y_chunk = int(highest_point/16)+1
-        #             for y in range(max_y_chunk):
-        #                 if (x, y, z) not in self.chunks:
-        #                     self.new_chunk(x, y, z, surface)
-        #
 
+            while z > -r:
+                z -= 1
+                surface, highest_point = self.generate_surface(x, z)
+                max_y_chunk = int(highest_point/16)+1
+                for y in range(max_y_chunk):
+                    if (x, y, z) not in self.chunks:
+                        self.new_chunk(x, y, z, surface)
+
+
+            while x > -r:
+                x -= 1
+                surface, highest_point = self.generate_surface(x, z)
+                max_y_chunk = int(highest_point/16)+1
+                for y in range(max_y_chunk):
+                    if (x, y, z) not in self.chunks:
+                        self.new_chunk(x, y, z, surface)
+
+
+            while z < r:
+                z += 1
+                surface, highest_point = self.generate_surface(x, z)
+                max_y_chunk = int(highest_point/16)+1
+                for y in range(max_y_chunk):
+                    if (x, y, z) not in self.chunks:
+                        self.new_chunk(x, y, z, surface)
+            r += 1
 
     def generate_surface(self, chunk_x, chunk_z):
         octaves = 10
@@ -103,14 +118,20 @@ class World:
                         for y in range(max_y_chunk):
                             for y in range(chunk_coords.y-render_rad, chunk_coords.y+render_rad+1):
                                 if (x, y, z) not in self.chunks:
-                                    self.new_chunk(x, y, z, surface)
+                                    self.new_chunk(x, y, z, surface, True)
 
-    def new_chunk(self, x, y, z, surface):
+    def new_chunk(self, x, y, z, surface, generate_default=False):
         # TODO - This is bad style
         self.chunks[(x, y, z)] = chunk.Chunk(x, y, z, surface, self.textures, self)
 
         # This should be threaded - generate_chunk_default is thread safe if _find_exposed_blocks is removed
         self.chunks[(x, y, z)].generate_chunk_default()
+
+        # TODO - Still not sure about this part,
+        generate_default = True
+        if generate_default:
+            self.chunks[(x, y, z)].find_exposed_blocks()
+
 
         # Find exposed blocks should be called from here
         # With Locking
@@ -130,11 +151,14 @@ class World:
     def generate_block_faces(self):
 
         # TODO - Can throttle here
-        # This is causing a crash
+        # TODO - Can use if not self.block_generation_queue.empty()
+
+        blocks_per_frame = 500
         queue_size = self.block_generation_queue.qsize()
         if queue_size > 0:
-            queue_loop = 500
-            if queue_size < 500:
+            print queue_size
+            queue_loop = blocks_per_frame
+            if queue_size < blocks_per_frame:
                 queue_loop = queue_size
             for i in range(queue_loop):
                 # TODO - if May still be required to check the queue still has values, could use a try and except
@@ -174,6 +198,5 @@ class World:
         return None
 
     def update_position(self, coords):
-        #pass
         # TODO - This should check if the coords are in a new chunk
         self._generate_chunks(coords)

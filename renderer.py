@@ -16,6 +16,7 @@ class Renderer:
         glShadeModel(GL_SMOOTH)
         glClearColor(0.0, 0.0, 0.0, 0.0)
         glClearDepth(1.0)
+
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LEQUAL)
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)

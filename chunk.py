@@ -28,11 +28,11 @@ class Chunk:
                     real_y = y+self.position.y*16
                     real_z = z+self.position.z*16
                     if (self.position.y*16 + y) <= self.surface[(real_x, real_z)]:
-                        # TODO - Real x, y, z to be passed in
                         self.create_block((real_x, real_y, real_z), False)
-        self._find_exposed_blocks()
 
-    def _find_exposed_blocks(self):
+        #self.find_exposed_blocks()
+
+    def find_exposed_blocks(self):
         for block_position in self.blocks.keys():
             x = block_position[0]
             y = block_position[1]
@@ -41,11 +41,72 @@ class Chunk:
             # TODO - This queue can greatly be reduced by checking if the faces are exposed
             # TODO - However, will require a rethink, as blocks may be updated while in the queue
             # TODO - May be already handled by the immediate block update
+            #self.world.block_generation_queue.put((self, x, y, z))
+            local_x = x-self.position.x*16
+            local_y = y-self.position.y*16
+            local_z = z-self.position.z*16
+
+
+            # Look at edge cases
+
+            # How can we apply this if the nearby batch hasnt been created yet?
+            # 3 distances , render, generate_batch, generate_world,
+            # when inside generate_world just generate the blocks
+            # when inside generate_batch, data will be available to generate with edge cases
+
+            if local_x == 15 or local_x == 0 or local_y == 15 or local_y == 0 or local_z == 15 or local_z == 0:
+                pass
+            else:
+                self.check_exposed_face(x, y, z)
+
+    # TODO - Do we still need to check entire block????, rewrite functions to add block to batch then recheck every face
+    def create_exposed_face(self, x, y, z):
+        texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
+
+        # TODO - Must be a better way of doing this
+
+        if (x, y+1, z) not in self.blocks:
+            self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
+        if (x, y-1, z) not in self.blocks:
+            self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
+
+        if (x+1, y, z) not in self.blocks:
+            self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
+        if (x-1, y, z) not in self.blocks:
+            self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
+
+        if (x, y, z-1) not in self.blocks:
+            self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
+        if (x, y, z+1) not in self.blocks:
+            self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
+
+    def check_exposed_face(self, x, y, z):
+        #texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
+
+        if (x, y+1, z) not in self.blocks:
             self.world.block_generation_queue.put((self, x, y, z))
-            #self._create_exposed_face(x, y, z)
+            #self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
+        elif (x, y-1, z) not in self.blocks:
+            self.world.block_generation_queue.put((self, x, y, z))
+            #self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
+
+        elif (x+1, y, z) not in self.blocks:
+            self.world.block_generation_queue.put((self, x, y, z))
+            #self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
+        elif (x-1, y, z) not in self.blocks:
+            self.world.block_generation_queue.put((self, x, y, z))
+            #self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
+
+        elif (x, y, z-1) not in self.blocks:
+            self.world.block_generation_queue.put((self, x, y, z))
+            #self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
+        elif (x, y, z+1) not in self.blocks:
+            self.world.block_generation_queue.put((self, x, y, z))
+            #self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
+
 
     # TODO - Can be shortend
-    def create_exposed_face(self, x, y, z):
+    def create_exposed_face_old(self, x, y, z):
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
 
         if (x, y+1, z) not in self.blocks:
@@ -86,7 +147,8 @@ class Chunk:
             self.create_batch_block(i[0], i[1], i[2])
 
     def create_batch_block(self, x, y, z):
-        self._create_exposed_face(x, y, z)
+        # TODO - This is broke, need to redo the create face function
+        self.create_exposed_face(x, y, z)
 
     def find_block(self, block_coords):
         local_coords = self._get_block_local_coords(block_coords)
@@ -95,14 +157,10 @@ class Chunk:
         return False
 
     def remove_block(self, block_coords):
-        local_coords = self._get_block_local_coords(block_coords)
-        x, y, z = local_coords[0], local_coords[1], local_coords[2]
-
-        if local_coords in self.blocks:
-            # Remove block
-            self.blocks[local_coords].clear_batch()
-            del self.blocks[local_coords]
-            self._update_surrounding_blocks(x, y, z)
+        if block_coords in self.blocks:
+            self.blocks[block_coords].clear_batch()
+            del self.blocks[block_coords]
+            self._update_surrounding_blocks(block_coords[0], block_coords[1], block_coords[2])
 
     def _update_surrounding_blocks(self, x, y, z):
         self._update_block((x-1, y, z))
@@ -114,6 +172,7 @@ class Chunk:
 
     def _update_block(self, coord):
         if (coord) in self.blocks:
+            # TODO - May not to clear here, if we are just adding a face
             self.blocks[coord].clear_batch()
             self.create_batch_block(coord[0], coord[1], coord[2])
 
