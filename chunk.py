@@ -10,6 +10,7 @@ class Chunk:
         self.blocks = {}
         self.blocks_new = {}
         self.batch_positions = {}
+        self.update_list = []
         self.position = pyclid.Vec3(x, y, z)
         self.CHUNK_SIZE = pyclid.Vec3(16, 16, 16)
 
@@ -55,7 +56,7 @@ class Chunk:
             # when inside generate_batch, data will be available to generate with edge cases
 
             if local_x == 15 or local_x == 0 or local_y == 15 or local_y == 0 or local_z == 15 or local_z == 0:
-                pass
+                self.check_exposed_face(x, y, z)
             else:
                 self.check_exposed_face(x, y, z)
 
@@ -130,11 +131,11 @@ class Chunk:
             # TODO - Needs lazy init
             # Select block id based on the depth from the surface
             if y <= self.surface[(x, z)]-5:
-                self.blocks[(x, y, z)] = block.Block(2)
+                self.blocks[(x, y, z)] = block.Block(2, self)
             elif y <= self.surface[(x, z)]-1:
-                self.blocks[(x, y, z)] = block.Block(0)
+                self.blocks[(x, y, z)] = block.Block(0, self)
             else:
-                self.blocks[(x, y, z)] = block.Block(1)
+                self.blocks[(x, y, z)] = block.Block(1, self)
 
             # Used to suppress block update when building the chunk
             if update:
@@ -186,6 +187,14 @@ class Chunk:
     def _get_block_local_coords(self, coords):
         block_coords = (coords[0], coords[1], coords[2])
         return block_coords
+
+    def add_to_update_list(self, block_object):
+        self.update_list.append(block_object)
+
+    def update_block_new(self):
+        if len(self.update_list) > 0:
+            pass
+            # Call world? so we can update surrounding blocks across chunks
 
     def render(self):
         self.batch.draw()

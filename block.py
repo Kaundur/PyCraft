@@ -3,11 +3,16 @@ from pyglet.gl import *
 
 class Block:
     # We dont store block position within the object to save on memory
-    def __init__(self, block_id):
+    def __init__(self, block_id, world):
         self.block_id = block_id
 
         # Store batch faces so its easy to delete
         self.batch_positions = {}
+
+        # TODO - need to store this list somewhere else
+        # TODO - Also should be a list
+        if self.block_id == 1:
+            world.add_to_update_list(self)
 
     def add_face(self, x, y, z, face, batch, texture, texture_coords):
         self._create_block_face(x, y, z, face, batch, texture, texture_coords)

@@ -59,7 +59,6 @@ class World:
                     if (x, y, z) not in self.chunks:
                         self.new_chunk(x, y, z, surface)
 
-
             while x > -r:
                 x -= 1
                 surface, highest_point = self.generate_surface(x, z)
@@ -67,7 +66,6 @@ class World:
                 for y in range(max_y_chunk):
                     if (x, y, z) not in self.chunks:
                         self.new_chunk(x, y, z, surface)
-
 
             while z < r:
                 z += 1
@@ -77,6 +75,7 @@ class World:
                     if (x, y, z) not in self.chunks:
                         self.new_chunk(x, y, z, surface)
             r += 1
+        self._generate_chunks(position)
 
     def generate_surface(self, chunk_x, chunk_z):
         octaves = 10
@@ -108,6 +107,7 @@ class World:
             # TODO - thread generation of things within generate_rad, but outside of render_rad
             # TODO - there should be one generating function
 
+            batch_rad = generate_rad-1
             # Generate chunk if it doesnt exist
             for x in range(chunk_coords.x-generate_rad, chunk_coords.x+generate_rad+1):
                 for z in range(chunk_coords.z-generate_rad, chunk_coords.z+generate_rad+1):
@@ -118,7 +118,11 @@ class World:
                         for y in range(max_y_chunk):
                             for y in range(chunk_coords.y-render_rad, chunk_coords.y+render_rad+1):
                                 if (x, y, z) not in self.chunks:
-                                    self.new_chunk(x, y, z, surface, True)
+                                    self.new_chunk(x, y, z, surface, False)
+                                    #if x > chunk_coords.x - batch_rad and x < chunk_coords.x + batch_rad and z > chunk_coords.z - batch_rad and z < chunk_coords.z + batch_rad:
+                                    #    self.new_chunk(x, y, z, surface, True)
+                                    #else:
+                                    #    self.new_chunk(x, y, z, surface, False)
 
     def new_chunk(self, x, y, z, surface, generate_default=False):
         # TODO - This is bad style
