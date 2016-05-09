@@ -7,6 +7,10 @@ from pyclid import Vec3
 import chunk
 
 
+# TODO - Issue with boarder around lowest blocks
+# TODO - One chunk rendering outside of batch radius
+
+
 class World:
     def __init__(self, textures):
         # Load in textures per world
@@ -14,6 +18,8 @@ class World:
         # chunks around the player to render
         self.render_distance = 2
         self.gravity = -15.0
+
+        self.current_centered_chunk = None
 
         # Not really a seed, the position of the noise in the 3D dimension
         self.seed = 0
@@ -26,56 +32,32 @@ class World:
         self.surface = {}
 
     def generate_world(self, position):
-
-        # y is up
-        # Spiral loop
-        # Start generation from player position
-        # Convert to chunk coords
-        x = int(position.x/16)
-        z = int(position.z/16)
-
-
-        surface, highest_point = self.generate_surface(x, z)
-        max_y_chunk = int(highest_point/16)+1
-        for y in range(max_y_chunk):
-            if (x, y, z) not in self.chunks:
-                self.new_chunk(x, y, z, surface)
-
-        r = 1
-        while r <= self.generate_distance:
-            while x < r:
-                x += 1
+        chunk_x = int(position.x/16)
+        chunk_y = int(position.y/16)
+        chunk_z = int(position.z/16)
+        self._loaded_position = Vec3(chunk_x, chunk_y, chunk_z)
+        for x in range(chunk_x-self.generate_distance, chunk_x+self.generate_distance):
+            for z in range(chunk_z-self.generate_distance, chunk_z+self.generate_distance):
                 surface, highest_point = self.generate_surface(x, z)
                 max_y_chunk = int(highest_point/16)+1
                 for y in range(max_y_chunk):
                     if (x, y, z) not in self.chunks:
                         self.new_chunk(x, y, z, surface)
 
-            while z > -r:
-                z -= 1
-                surface, highest_point = self.generate_surface(x, z)
-                max_y_chunk = int(highest_point/16)+1
-                for y in range(max_y_chunk):
-                    if (x, y, z) not in self.chunks:
-                        self.new_chunk(x, y, z, surface)
+        self._generate_chunk_batches(position)
 
-            while x > -r:
-                x -= 1
-                surface, highest_point = self.generate_surface(x, z)
-                max_y_chunk = int(highest_point/16)+1
-                for y in range(max_y_chunk):
-                    if (x, y, z) not in self.chunks:
-                        self.new_chunk(x, y, z, surface)
+    def _generate_chunk_batches(self, position):
+        # Generate the faces of the surface
+        chunk_x = int(position.x/16)
+        chunk_z = int(position.z/16)
 
-            while z < r:
-                z += 1
+        for x in range(chunk_x-self.generate_distance+1, chunk_x+self.generate_distance-1):
+            for z in range(chunk_z-self.generate_distance+1, chunk_z+self.generate_distance-1):
                 surface, highest_point = self.generate_surface(x, z)
                 max_y_chunk = int(highest_point/16)+1
                 for y in range(max_y_chunk):
-                    if (x, y, z) not in self.chunks:
-                        self.new_chunk(x, y, z, surface)
-            r += 1
-        self._generate_chunks(position)
+                    if (x, y, z) in self.chunks:
+                        self.chunks[(x, y, z)].find_exposed_blocks()
 
     def generate_surface(self, chunk_x, chunk_z):
         octaves = 10
@@ -91,54 +73,17 @@ class World:
             for z in xrange(real_pos_z, real_pos_z + 16):
                 point = int((snoise3(x / freq, z / freq, self.seed, octaves) * 127.0 + 128.0)/scale)
                 surface[(x, z)] = point
-
                 if point > highest_point:
                     highest_point = point
 
         return surface, highest_point
 
-    def _generate_chunks(self, position):
-        chunk_coords = self.find_chunk_coords(position)
-        if chunk_coords != self._loaded_position:
-            self._loaded_position = chunk_coords
-            render_rad = 2
-            generate_rad = 1
-            # TODO - Should generate things within render_rad first
-            # TODO - thread generation of things within generate_rad, but outside of render_rad
-            # TODO - there should be one generating function
-
-            batch_rad = generate_rad-1
-            # Generate chunk if it doesnt exist
-            for x in range(chunk_coords.x-generate_rad, chunk_coords.x+generate_rad+1):
-                for z in range(chunk_coords.z-generate_rad, chunk_coords.z+generate_rad+1):
-                    if (x, 0, z) not in self.chunks:
-                        surface, highest_point = self.generate_surface(x, z)
-                        # Get max value in surface
-                        max_y_chunk = int(highest_point/16)+1
-                        for y in range(max_y_chunk):
-                            for y in range(chunk_coords.y-render_rad, chunk_coords.y+render_rad+1):
-                                if (x, y, z) not in self.chunks:
-                                    self.new_chunk(x, y, z, surface, False)
-                                    #if x > chunk_coords.x - batch_rad and x < chunk_coords.x + batch_rad and z > chunk_coords.z - batch_rad and z < chunk_coords.z + batch_rad:
-                                    #    self.new_chunk(x, y, z, surface, True)
-                                    #else:
-                                    #    self.new_chunk(x, y, z, surface, False)
-
-    def new_chunk(self, x, y, z, surface, generate_default=False):
+    def new_chunk(self, x, y, z, surface):
         # TODO - This is bad style
         self.chunks[(x, y, z)] = chunk.Chunk(x, y, z, surface, self.textures, self)
 
         # This should be threaded - generate_chunk_default is thread safe if _find_exposed_blocks is removed
         self.chunks[(x, y, z)].generate_chunk_default()
-
-        # TODO - Still not sure about this part,
-        generate_default = True
-        if generate_default:
-            self.chunks[(x, y, z)].find_exposed_blocks()
-
-
-        # Find exposed blocks should be called from here
-        # With Locking
 
     def render(self):
         # Load extra blocks from queue
@@ -203,4 +148,7 @@ class World:
 
     def update_position(self, coords):
         # TODO - This should check if the coords are in a new chunk
-        self._generate_chunks(coords)
+
+        if self.find_chunk_coords(coords) != self.current_centered_chunk:
+            self.current_centered_chunk = self.find_chunk_coords(coords)
+            self.generate_world(coords)

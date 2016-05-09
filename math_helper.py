@@ -3,8 +3,6 @@ from pyglet.gl import *
 import ctypes
 import pyclid
 
-import block
-
 
 def clip(value, min_value, max_value):
     if value > max_value:
@@ -29,7 +27,9 @@ def get_sight_vector(player):
     dz = math.sin(math.radians(x - 90)) * m
 
     # Is this ok? generating an object all the time
-    return pyclid.Vec3(dx, dy, dz)
+    player.sight_vector.x = dx
+    player.sight_vector.y = dy
+    player.sight_vector.z = dz
 
 
 def los_collision_short(world, player):
@@ -139,6 +139,5 @@ def area_triangle(a, b, c):
 
 
 def area_rect(a, b, c, d):
-    # calculating from points, could be on a non-standard angle
-    # shoelace_formula
+    # shoelace_formula - calculating from points, could be on a non-standard angle
     return 0.5*(a[0]*b[1] + b[0]*c[1] + c[0]*d[1] + d[0]*a[1] - a[1]*b[0] - b[1]*c[0] - c[1]*d[0] - d[1]*a[0])

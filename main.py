@@ -2,6 +2,8 @@ import pyglet
 from pyglet.gl import *
 from pyglet.window import key
 
+import pyclid
+
 import renderer
 import menu
 import world
@@ -30,6 +32,8 @@ class Game(pyglet.window.Window):
 
 
         self.player = player.Player(self.world)
+
+        self.world.current_centered_chunk = self.world.find_chunk_coords(self.player.position)
         self.world.generate_world(self.player.position)
 
 

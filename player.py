@@ -26,7 +26,7 @@ class Player:
         # TODO - Should be external of player
         self.dt = 1.0/30.0
 
-        self.sight_vector = None
+        self.sight_vector = Vec3()
         self.get_sight_vector()
 
         # Coords in real space
@@ -34,7 +34,7 @@ class Player:
         self.connecting_block = None
 
     def get_sight_vector(self):
-        self.sight_vector = math_helper.get_sight_vector(self)
+        math_helper.get_sight_vector(self)
         prev_block, pos = math_helper.los_collision_short(self.world, self)
         self.focused_block = pos
         self.connecting_block = prev_block
