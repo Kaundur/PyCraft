@@ -6,9 +6,7 @@ from pyclid import Vec3
 
 import chunk
 
-
 # TODO - Issue with boarder around lowest blocks
-# TODO - One chunk rendering outside of batch radius
 
 
 class World:
@@ -81,7 +79,6 @@ class World:
     def new_chunk(self, x, y, z, surface):
         # TODO - This is bad style
         self.chunks[(x, y, z)] = chunk.Chunk(x, y, z, surface, self.textures, self)
-
         # This should be threaded - generate_chunk_default is thread safe if _find_exposed_blocks is removed
         self.chunks[(x, y, z)].generate_chunk_default()
 

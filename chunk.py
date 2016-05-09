@@ -69,27 +69,46 @@ class Chunk:
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
 
         # TODO - Must be a better way of doing this
+        # TODO - Using world.find_block will be slower than checking if the block is an edge case
 
-        if (x, y+1, z) not in self.blocks:
+        if not self.world.find_block((x, y+1, z)):
             self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
-            # Dont render bottom of world
-        if (x, y-1, z) not in self.blocks and y != 0:
+        # Dont render bottom of world y != 0
+        # Check y != 0 first, as this is a quicker call than find_block
+        if y != 0 and not self.world.find_block((x, y-1, z)):
             self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
 
-        if (x+1, y, z) not in self.blocks:
+        if not self.world.find_block((x+1, y, z)):
             self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
-        if (x-1, y, z) not in self.blocks:
+        if not self.world.find_block((x-1, y, z)):
             self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
 
-        if (x, y, z-1) not in self.blocks:
+        if not self.world.find_block((x, y, z-1)):
             self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
-        if (x, y, z+1) not in self.blocks:
+        if not self.world.find_block((x, y, z+1)):
             self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
+
+        #
+        # if (x, y+1, z) not in self.blocks:
+        #     self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
+        #     # Dont render bottom of world
+        # if (x, y-1, z) not in self.blocks and y != 0:
+        #     self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
+        #
+        # if (x+1, y, z) not in self.blocks:
+        #     self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
+        # if (x-1, y, z) not in self.blocks:
+        #     self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
+        #
+        # if (x, y, z-1) not in self.blocks:
+        #     self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
+        # if (x, y, z+1) not in self.blocks:
+        #     self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
 
     def check_exposed_face(self, x, y, z, edge=False):
         #texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
 
-        # Handle edge cases
+        # Handle edge of chunk values
         if edge:
             if not self.world.find_block((x, y+1, z)):
                 self.world.block_generation_queue.put((self, x, y, z))
