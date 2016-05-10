@@ -34,8 +34,8 @@ class Player:
         self.focused_block = None
         self.connecting_block = None
 
-    def update_active_item(self):
-        self.gui.update_active_item(0)
+    def update_active_item(self, item_index):
+        self.gui.update_active_item(item_index)
 
     def get_sight_vector(self):
         math_helper.get_sight_vector(self)
@@ -48,7 +48,22 @@ class Player:
             x, y, z = self.focused_block[0], self.focused_block[1], self.focused_block[2]
             block.highlight_cube(x, y, z, 1)
 
+    def handle_action_bar_keys(self, keys):
+        if keys[key._1]:
+            self.update_active_item(0)
+        elif keys[key._2]:
+            self.update_active_item(1)
+        elif keys[key._3]:
+            self.update_active_item(2)
+        elif keys[key._4]:
+            self.update_active_item(3)
+        elif keys[key._5]:
+            self.update_active_item(4)
+
     def handle_keys(self, keys):
+
+        self.handle_action_bar_keys(keys)
+
         self.move(keys)
 
         self._do_collision()

@@ -39,7 +39,10 @@ class ActionBar:
     #     y = 10
 
     def update_active_item(self, active_item):
-        self.active_item = active_item
+        if self.active_item != active_item:
+            self.active_item = active_item
+            # reset the item_rotation for a cleaner animation
+            self.item_rotate = 0
 
     def render(self):
         self.render_action_bar()

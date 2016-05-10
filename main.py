@@ -31,12 +31,10 @@ class Game(pyglet.window.Window):
 
         self.world = world.World(self.textures)
 
-
         self.player = player.Player(self.world, self.game_menu)
 
         self.world.current_centered_chunk = self.world.find_chunk_coords(self.player.position)
         self.world.generate_world(self.player.position)
-
 
         self.keys = key.KeyStateHandler()
         self.push_handlers(self.keys)
