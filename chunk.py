@@ -6,7 +6,7 @@ import block
 
 
 class Chunk:
-    def __init__(self, x, y, z, surface, textures, world):
+    def __init__(self, x, y, z, textures, world):
         self.blocks = {}
         self.blocks_new = {}
         self.batch_positions = {}
@@ -15,8 +15,6 @@ class Chunk:
         self.CHUNK_SIZE = pyclid.Vec3(16, 16, 16)
 
         self.batch_generated = False
-
-        self.surface = surface
 
         # TODO - Can we keep textures outside of the chunk
         self.textures = textures
@@ -30,13 +28,14 @@ class Chunk:
                     real_x = x+self.position.x*16
                     real_y = y+self.position.y*16
                     real_z = z+self.position.z*16
-                    if (self.position.y*16 + y) <= self.surface[(real_x, real_z)]:
+                    surface_point = self.world.get_surface(real_x, real_z)
+                    if (self.position.y*16 + y) <= surface_point:
 
                         # Select block id based on distance to surface block
                         block_id = 1
-                        if real_y <= self.surface[(real_x, real_z)]-5:
+                        if real_y <= surface_point-5:
                             block_id = 2
-                        elif real_y <= self.surface[(real_x, real_z)]-1:
+                        elif real_y <= surface_point-1:
                             block_id = 0
 
                         self.create_block((real_x, real_y, real_z), block_id, False)

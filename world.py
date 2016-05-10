@@ -29,6 +29,7 @@ class World:
         self.chunks = {}
         self.surface = {}
 
+
     def generate_world(self, position):
         chunk_x = int(position.x/16)
         chunk_y = int(position.y/16)
@@ -36,49 +37,48 @@ class World:
         self._loaded_position = Vec3(chunk_x, chunk_y, chunk_z)
         for x in range(chunk_x-self.generate_distance, chunk_x+self.generate_distance):
             for z in range(chunk_z-self.generate_distance, chunk_z+self.generate_distance):
-                surface, highest_point = self.generate_surface(x, z)
-                max_y_chunk = int(highest_point/16)+1
-                for y in range(max_y_chunk):
-                    if (x, y, z) not in self.chunks:
-                        self.new_chunk(x, y, z, surface)
+                if (x, 0, z) not in self.chunks:
+                    self.generate_surface(x, z)
+                    max_y_chunk = chunk_y +self.generate_distance
+                    for y in range(max_y_chunk):
+                        if (x, y, z) not in self.chunks:
+                            self.new_chunk(x, y, z)
 
         self._generate_chunk_batches(position)
 
     def _generate_chunk_batches(self, position):
         # Generate the faces of the surface
         chunk_x = int(position.x/16)
+        chunk_y = int(position.y/16)
         chunk_z = int(position.z/16)
 
         for x in range(chunk_x-self.generate_distance+1, chunk_x+self.generate_distance-1):
             for z in range(chunk_z-self.generate_distance+1, chunk_z+self.generate_distance-1):
-                surface, highest_point = self.generate_surface(x, z)
-                max_y_chunk = int(highest_point/16)+1
+                max_y_chunk = chunk_y + self.generate_distance+1
                 for y in range(max_y_chunk):
                     if (x, y, z) in self.chunks:
                         self.chunks[(x, y, z)].find_exposed_blocks()
 
     def generate_surface(self, chunk_x, chunk_z):
-        octaves = 10
-        freq = 16.0 * octaves
-        surface = {}
-
         real_pos_x = chunk_x*16
         real_pos_z = chunk_z*16
-        scale = 5
 
-        highest_point = 0
-        for local_x, x in enumerate(xrange(real_pos_x, real_pos_x + 16)):
-            for z in xrange(real_pos_z, real_pos_z + 16):
-                point = int((snoise3(x / freq, z / freq, self.seed, octaves) * 127.0 + 128.0)/scale)
-                surface[(x, z)] = point
-                if point > highest_point:
-                    highest_point = point
+        if (real_pos_x, real_pos_z) not in self.surface:
+            octaves = 10
+            freq = 16.0 * octaves
+            scale = 5
 
-        return surface, highest_point
+            for x in xrange(real_pos_x, real_pos_x + 16):
+                for z in xrange(real_pos_z, real_pos_z + 16):
+                    point = int((snoise3(x / freq, z / freq, self.seed, octaves) * 127.0 + 128.0)/scale)
+                    self.surface[(x, z)] = point
 
-    def new_chunk(self, x, y, z, surface):
+    def get_surface(self, x, z):
+        return self.surface[(x, z)]
+
+    def new_chunk(self, x, y, z):
         # TODO - This is bad style
-        self.chunks[(x, y, z)] = chunk.Chunk(x, y, z, surface, self.textures, self)
+        self.chunks[(x, y, z)] = chunk.Chunk(x, y, z, self.textures, self)
         # This should be threaded - generate_chunk_default is thread safe if _find_exposed_blocks is removed
         self.chunks[(x, y, z)].generate_chunk_default()
 

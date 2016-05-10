@@ -15,11 +15,9 @@ class Block:
             world.add_to_update_list(self)
 
     def add_face(self, x, y, z, face, batch, texture, texture_coords):
-        self._create_block_face(x, y, z, face, batch, texture, texture_coords)
-
-    def _create_block_face(self, x, y, z, face, batch, texture, texture_coords):
         batch_pos = render_face(x, y, z, face, batch, texture, texture_coords)
         self.batch_positions[face] = batch_pos
+
 
     def clear_batch(self):
         for batch_pos in self.batch_positions.keys():
