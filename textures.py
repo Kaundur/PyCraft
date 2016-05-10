@@ -19,6 +19,7 @@ class Textures:
         self.textures = {}
         self.load_texture_dictionary()
 
+    # This returns the texture coords split by each face
     def get_texture(self, voxel_id):
         return self.textures[voxel_id]
 
@@ -29,6 +30,20 @@ class Textures:
         self.textures[2] = self._get_texture((1, 1), (1, 1), (1, 1))  # Stone
         self.textures[3] = self._get_texture((2, 0), (2, 0), (2, 0))  # Bedrock
         self.textures[4] = self._get_texture((2, 1), (2, 1), (2, 1))  # Brick
+
+    # TODO - Should the textures be stored as face and full values?
+    def get_texture_full(self, voxel_id):
+        face_texture = self.textures[voxel_id]
+        voxel_texture = []
+        voxel_texture.extend(face_texture[0])
+        voxel_texture.extend(face_texture[1])
+        voxel_texture.extend(face_texture[2])
+        voxel_texture.extend(face_texture[3])
+        voxel_texture.extend(face_texture[4])
+        voxel_texture.extend(face_texture[5])
+
+        return voxel_texture
+
 
     def _get_texture(self, top, bottom, sides):
         texture_coords = []

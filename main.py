@@ -21,6 +21,7 @@ class Game(pyglet.window.Window):
 
         self.textures = textures.Textures()
 
+        self.game_menu = menu.MenuController(self.textures, self)
         #self.main_menu = menu.MainMenu(self)
         self.main_menu = None
 
@@ -31,7 +32,7 @@ class Game(pyglet.window.Window):
         self.world = world.World(self.textures)
 
 
-        self.player = player.Player(self.world)
+        self.player = player.Player(self.world, self.game_menu)
 
         self.world.current_centered_chunk = self.world.find_chunk_coords(self.player.position)
         self.world.generate_world(self.player.position)
@@ -78,7 +79,6 @@ class Game(pyglet.window.Window):
         # Maybe render is a bad idea
         # Could just use to set up opengl
 
-
         self.player.handle_keys(self.keys)
         self.player.update_player()
 
@@ -100,12 +100,16 @@ class Game(pyglet.window.Window):
 
         self.player.draw_focused_block()
 
+        self.game_menu.render()
+
         self.render.set_2d()
 
         #if self.in_menu:
         #    self.main_menu.render_2d()
         #else:
         renderer.draw_cursor([self.width/2.0, self.height/2.0])
+
+
 
     def exit_game(self):
         pyglet.app.exit()

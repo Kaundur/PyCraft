@@ -9,7 +9,7 @@ import block
 
 
 class Player:
-    def __init__(self, world):
+    def __init__(self, world, gui):
         self.world = world
         self.player_height = 0.0
         self.position = Vec3(8, 60, 8)
@@ -17,6 +17,7 @@ class Player:
         # -90 up, 90 down
         self.rotation = Vec2(100, 10)
         self.speed = 1.0
+        self.gui = gui
 
         self.flying = False
         self.on_ground = False
@@ -32,6 +33,9 @@ class Player:
         # Coords in real space
         self.focused_block = None
         self.connecting_block = None
+
+    def update_active_item(self):
+        self.gui.update_active_item(0)
 
     def get_sight_vector(self):
         math_helper.get_sight_vector(self)
