@@ -118,13 +118,13 @@ class World:
         if found_chunk:
             found_chunk.remove_block(coords)
 
-    def create_block(self, coords):
+    def create_block(self, coords, block_id):
         chunk_coords = (int(math.floor(coords[0]/16)), int(math.floor(coords[1]/16)), int(math.floor(coords[2]/16)))
         if chunk_coords in self.chunks:
             chunk = self.chunks[chunk_coords]
             # Find block coordinates local to chunk
             block_coords = (coords[0], coords[1], coords[2])
-            chunk.create_block(block_coords)
+            chunk.create_block(block_coords, block_id)
 
     def find_block(self, coords):
         block_found = False

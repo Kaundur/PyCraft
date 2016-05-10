@@ -26,7 +26,7 @@ class ActionBar:
     def __init__(self, game_textures):
         self.game_textures = game_textures
         self.texture_group = self.game_textures.texture_main
-        self.active_item = 3
+        self.active_item = 1
         self.item_rotate = 0
 
         self.initialise_action_bar_items()
@@ -78,9 +78,9 @@ class ActionBar:
         for i in range(5):
             active = False
 
-            if i == self.active_item:
-
+            if i+1 == self.active_item:
                 active = True
+
             x += 2
             glLoadIdentity()
 

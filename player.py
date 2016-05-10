@@ -18,6 +18,8 @@ class Player:
         self.rotation = Vec2(100, 10)
         self.speed = 1.0
         self.gui = gui
+        self.active_item_id = 1
+        self.update_active_item(self.active_item_id)
 
         self.flying = False
         self.on_ground = False
@@ -34,8 +36,12 @@ class Player:
         self.focused_block = None
         self.connecting_block = None
 
+        self.action_bar_item_map = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
+
+
     def update_active_item(self, item_index):
-        self.gui.update_active_item(item_index)
+        self.active_item_id = item_index
+        self.gui.update_active_item(self.active_item_id)
 
     def get_sight_vector(self):
         math_helper.get_sight_vector(self)
@@ -50,15 +56,15 @@ class Player:
 
     def handle_action_bar_keys(self, keys):
         if keys[key._1]:
-            self.update_active_item(0)
-        elif keys[key._2]:
             self.update_active_item(1)
-        elif keys[key._3]:
+        elif keys[key._2]:
             self.update_active_item(2)
-        elif keys[key._4]:
+        elif keys[key._3]:
             self.update_active_item(3)
-        elif keys[key._5]:
+        elif keys[key._4]:
             self.update_active_item(4)
+        elif keys[key._5]:
+            self.update_active_item(5)
 
     def handle_keys(self, keys):
 
@@ -127,7 +133,7 @@ class Player:
                 self.world.remove_block(self.focused_block)
         if button == pyglet.window.mouse.RIGHT:
             if self.connecting_block:
-                self.world.create_block(self.connecting_block)
+                self.world.create_block(self.connecting_block, self.action_bar_item_map[self.active_item_id])
 
     def _do_collision(self):
 

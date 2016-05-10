@@ -31,7 +31,15 @@ class Chunk:
                     real_y = y+self.position.y*16
                     real_z = z+self.position.z*16
                     if (self.position.y*16 + y) <= self.surface[(real_x, real_z)]:
-                        self.create_block((real_x, real_y, real_z), False)
+
+                        # Select block id based on distance to surface block
+                        block_id = 1
+                        if real_y <= self.surface[(real_x, real_z)]-5:
+                            block_id = 2
+                        elif real_y <= self.surface[(real_x, real_z)]-1:
+                            block_id = 0
+
+                        self.create_block((real_x, real_y, real_z), block_id, False)
 
         #self.find_exposed_blocks()
 
@@ -88,22 +96,6 @@ class Chunk:
         if not self.world.find_block((x, y, z+1)):
             self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
 
-        #
-        # if (x, y+1, z) not in self.blocks:
-        #     self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
-        #     # Dont render bottom of world
-        # if (x, y-1, z) not in self.blocks and y != 0:
-        #     self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
-        #
-        # if (x+1, y, z) not in self.blocks:
-        #     self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
-        # if (x-1, y, z) not in self.blocks:
-        #     self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
-        #
-        # if (x, y, z-1) not in self.blocks:
-        #     self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
-        # if (x, y, z+1) not in self.blocks:
-        #     self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
 
     def check_exposed_face(self, x, y, z, edge=False):
         #texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
@@ -153,17 +145,12 @@ class Chunk:
                 self.world.block_generation_queue.put((self, x, y, z))
                 #self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
 
-    def create_block(self, coords, update=True):
+    def create_block(self, coords, block_id, update=True):
         x, y, z = coords[0], coords[1], coords[2]
         if (x, y, z) not in self.blocks:
+            # TODO - Need to check if block_id is valid
+            self.blocks[(x, y, z)] = block.Block(block_id, self)
             # TODO - Needs lazy init
-            # Select block id based on the depth from the surface
-            if y <= self.surface[(x, z)]-5:
-                self.blocks[(x, y, z)] = block.Block(2, self)
-            elif y <= self.surface[(x, z)]-1:
-                self.blocks[(x, y, z)] = block.Block(0, self)
-            else:
-                self.blocks[(x, y, z)] = block.Block(1, self)
 
             # Used to suppress block update when building the chunk
             if update:
