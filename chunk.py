@@ -1,6 +1,7 @@
 import pyglet
 from pyglet.gl import *
 import pyclid
+import random
 
 import block
 
@@ -48,39 +49,25 @@ class Chunk:
                 x = block_position[0]
                 y = block_position[1]
                 z = block_position[2]
-                # Put block location and chunk into the queue
-                # TODO - This queue can greatly be reduced by checking if the faces are exposed
-                # TODO - However, will require a rethink, as blocks may be updated while in the queue
-                # TODO - May be already handled by the immediate block update
-                #self.world.block_generation_queue.put((self, x, y, z))
+
                 local_x = x-self.position.x*16
                 local_y = y-self.position.y*16
                 local_z = z-self.position.z*16
 
-
                 # Look at edge cases
-
-                # How can we apply this if the nearby batch hasnt been created yet?
-                # 3 distances , render, generate_batch, generate_world,
-                # when inside generate_world just generate the blocks
-                # when inside generate_batch, data will be available to generate with edge cases
-
                 if local_x == 15 or local_x == 0 or local_y == 15 or local_y == 0 or local_z == 15 or local_z == 0:
                     self.check_exposed_face(x, y, z, True)
                 else:
                     self.check_exposed_face(x, y, z)
             self.batch_generated = True
 
-    # TODO - Do we still need to check entire block????, rewrite functions to add block to batch then recheck every face
     def create_exposed_face(self, x, y, z):
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
 
-        # TODO - Must be a better way of doing this
         # TODO - Using world.find_block will be slower than checking if the block is an edge case
-
         if not self.world.find_block((x, y+1, z)):
             self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
-        # Dont render bottom of world y != 0
+        # Don't render bottom of world y != 0
         # Check y != 0 first, as this is a quicker call than find_block
         if y != 0 and not self.world.find_block((x, y-1, z)):
             self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
@@ -97,59 +84,43 @@ class Chunk:
 
 
     def check_exposed_face(self, x, y, z, edge=False):
-        #texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
-
         # Handle edge of chunk values
         if edge:
             if not self.world.find_block((x, y+1, z)):
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
             elif not self.world.find_block((x, y-1, z)):
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
 
             elif not self.world.find_block((x+1, y, z)):
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
             elif not self.world.find_block((x-1, y, z)):
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
 
             elif not self.world.find_block((x, y, z-1)):
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
             elif not self.world.find_block((x, y, z+1)):
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
-
         else:
             if (x, y+1, z) not in self.blocks:
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
             elif (x, y-1, z) not in self.blocks:
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
 
             elif (x+1, y, z) not in self.blocks:
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
             elif (x-1, y, z) not in self.blocks:
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
 
             elif (x, y, z-1) not in self.blocks:
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
             elif (x, y, z+1) not in self.blocks:
                 self.world.block_generation_queue.put((self, x, y, z))
-                #self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
 
     def create_block(self, coords, block_id, update=True):
         x, y, z = coords[0], coords[1], coords[2]
         if (x, y, z) not in self.blocks:
             # TODO - Need to check if block_id is valid
-            self.blocks[(x, y, z)] = block.Block(block_id, self)
-            # TODO - Needs lazy init
+            self.blocks[(x, y, z)] = block.Block((x, y, z), block_id, self)
 
             # Used to suppress block update when building the chunk
             if update:
@@ -162,7 +133,6 @@ class Chunk:
             self.create_batch_block(i[0], i[1], i[2])
 
     def create_batch_block(self, x, y, z):
-        # TODO - This is broke, need to redo the create face function
         self.create_exposed_face(x, y, z)
 
     def find_block(self, block_coords):
@@ -178,18 +148,20 @@ class Chunk:
             self._update_surrounding_blocks(block_coords[0], block_coords[1], block_coords[2])
 
     def _update_surrounding_blocks(self, x, y, z):
-        self._update_block((x-1, y, z))
-        self._update_block((x+1, y, z))
-        self._update_block((x, y-1, z))
-        self._update_block((x, y+1, z))
-        self._update_block((x, y, z-1))
-        self._update_block((x, y, z+1))
+        self.update_block((x-1, y, z))
+        self.update_block((x+1, y, z))
+        self.update_block((x, y-1, z))
+        self.update_block((x, y+1, z))
+        self.update_block((x, y, z-1))
+        self.update_block((x, y, z+1))
 
-    def _update_block(self, coord):
-        if (coord) in self.blocks:
-            # TODO - May not to clear here, if we are just adding a face
+    def update_block(self, coord):
+        if coord in self.blocks:
             self.blocks[coord].clear_batch()
             self.create_batch_block(coord[0], coord[1], coord[2])
+        else:
+            if self.world.find_block(coord):
+                self.world.find_chunk(coord).update_block(coord)
 
     def _clear_block_batch(self, x, y, z):
         # Delete batch faces of current block
@@ -202,8 +174,8 @@ class Chunk:
         block_coords = (coords[0], coords[1], coords[2])
         return block_coords
 
-    def add_to_update_list(self, block_object):
-        self.update_list.append(block_object)
+    def add_to_update_list(self, position, block_object):
+        self.update_list.append((position, block_object))
 
     def update_block_new(self):
         if len(self.update_list) > 0:
@@ -212,3 +184,50 @@ class Chunk:
 
     def render(self):
         self.batch.draw()
+
+    def grass_update(self, x, y, z, other_block_obj):
+        if other_block_obj.block_id == 0:
+            other_block_obj.update_block_id((x, y, z), 1, self)
+            other_block_obj.clear_batch()
+            self._update_surrounding_blocks(x, y, z)
+            self.create_batch_block(x, y, z)
+
+    def do_grass_grow(self, x, y, z):
+        if (x+1, y, z) in self.blocks and (x+1, y+1, z) not in self.blocks:
+            if random.randint(0, 10) > 8:
+                other_block_obj = self.blocks[(x+1, y, z)]
+                self.grass_update(x+1, y, z, other_block_obj)
+        # if (x-1, y, z) in self.blocks and (x-1, y+1, z) not in self.blocks:
+        #     if random.randint(0, 10) > 8:
+        #         other_block_obj = self.blocks[(x-1, y, z)]
+        #         self.grass_update(x-11, y, z, other_block_obj)
+        # if (x, y, z+1) in self.blocks and (x, y+1, z+1) not in self.blocks:
+        #     if random.randint(0, 10) > 8:
+        #         other_block_obj = self.blocks[(x, y, z+1)]
+        #         self.grass_update(x, y, z+1, other_block_obj)
+        # if (x, y, z-1) in self.blocks and (x, y+1, z-1) not in self.blocks:
+        #     if random.randint(0, 10) > 8:
+        #         other_block_obj = self.blocks[(x, y, z-1)]
+        #         self.grass_update(x, y, z-1, other_block_obj)
+
+    def do_tick(self):
+        delete_list = []
+        for list_index, (block_position, block_obj) in enumerate(self.update_list):
+            # Grass
+            if block_obj.block_id == 1:
+                x = block_position[0]
+                y = block_position[1]
+                z = block_position[2]
+                self.do_grass_grow(x, y, z)
+                # Calling world.find_block is very slow
+                # if self.world.find_block((x, y+1, z)):
+                #     # Note, this tick is causing lag
+                #     block_obj.update_block_id(block_position, 0, self)
+                #     delete_list.append((block_position, block_obj))
+                #     block_obj.clear_batch()
+                #     self._update_surrounding_blocks(x, y, z)
+                #     self.create_batch_block(x, y, z)
+
+        if delete_list:
+            for index_tuple in delete_list[::-1]:
+                self.update_list.remove(index_tuple)

@@ -6,8 +6,6 @@ from pyclid import Vec3
 
 import chunk
 
-# TODO - Issue with boarder around lowest blocks
-
 
 class World:
     def __init__(self, textures):
@@ -29,7 +27,6 @@ class World:
         self.chunks = {}
         self.surface = {}
 
-
     def generate_world(self, position):
         chunk_x = int(position.x/16)
         chunk_y = int(position.y/16)
@@ -42,7 +39,7 @@ class World:
                     max_y_chunk = chunk_y +self.generate_distance
                     for y in range(max_y_chunk):
                         if (x, y, z) not in self.chunks:
-                            self.new_chunk(x, y, z)
+                            self.generate_new_chunk(x, y, z)
 
         self._generate_chunk_batches(position)
 
@@ -76,10 +73,8 @@ class World:
     def get_surface(self, x, z):
         return self.surface[(x, z)]
 
-    def new_chunk(self, x, y, z):
-        # TODO - This is bad style
+    def generate_new_chunk(self, x, y, z):
         self.chunks[(x, y, z)] = chunk.Chunk(x, y, z, self.textures, self)
-        # This should be threaded - generate_chunk_default is thread safe if _find_exposed_blocks is removed
         self.chunks[(x, y, z)].generate_chunk_default()
 
     def render(self):
@@ -114,7 +109,7 @@ class World:
 
     def remove_block(self, coords):
         # Find chunk which block is in
-        found_chunk = self._find_chunk(coords)
+        found_chunk = self.find_chunk(coords)
         if found_chunk:
             found_chunk.remove_block(coords)
 
@@ -128,7 +123,7 @@ class World:
 
     def find_block(self, coords):
         block_found = False
-        block_chunk = self._find_chunk(coords)
+        block_chunk = self.find_chunk(coords)
         if block_chunk:
             block_found = block_chunk.find_block(coords)
         return block_found
@@ -136,7 +131,7 @@ class World:
     def find_chunk_coords(self, coords):
         return Vec3(int(math.floor(coords.x/16)), int(math.floor(coords.y/16)), int(math.floor(coords.z/16)))
 
-    def _find_chunk(self, coords):
+    def find_chunk(self, coords):
         # Takes in real coords of block, returns the chunk that the block exists in
         chunk_coords = (int(math.floor(coords[0]/16)), int(math.floor(coords[1]/16)), int(math.floor(coords[2]/16)))
         if chunk_coords in self.chunks:
@@ -144,8 +139,15 @@ class World:
         return None
 
     def update_position(self, coords):
-        # TODO - This should check if the coords are in a new chunk
-
         if self.find_chunk_coords(coords) != self.current_centered_chunk:
             self.current_centered_chunk = self.find_chunk_coords(coords)
             self.generate_world(coords)
+
+    def do_tick(self):
+        # For chunks within the render distance apply the tick
+        render_rad = 5
+        for x in range(self._loaded_position.x-render_rad, self._loaded_position.x+render_rad+1):
+            for z in range(self._loaded_position.z-render_rad, self._loaded_position.z+render_rad+1):
+                for y in range(self._loaded_position.y-render_rad, self._loaded_position.y+render_rad+1):
+                    if (x, y, z) in self.chunks:
+                        self.chunks[(x, y, z)].do_tick()

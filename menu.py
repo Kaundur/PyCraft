@@ -9,14 +9,17 @@ import renderer
 
 # TODO - Rename menu.py to GUI, and GUIController?
 
+
 class MenuController:
     def __init__(self, game_textures, main):
         self.main = main
         self.game_textures = game_textures
         self.action_bar = ActionBar(self.game_textures)
+        self.main_menu = MainMenu(main)
 
     def render(self):
         self.action_bar.render()
+        #self.main_menu.render()
 
     def update_active_item(self, active_item):
         self.action_bar.update_active_item(active_item)
@@ -93,7 +96,6 @@ class ActionBar:
             self.action_bar_items[i].draw()
 
 
-
 class MainMenu:
     def __init__(self, game):
 
@@ -127,7 +129,7 @@ class MainMenu:
         voxel = block.voxel(self.x, self.y, self.z, 1)
 
         i = 1
-        v_texture = self.textures.get_texture(i)
+        v_texture = self.textures.get_texture_full(i)
 
         self.menu_batch.add(24, pyglet.gl.GL_QUADS, self.texture_group, ('v3f', voxel), ('t2f', v_texture))
         #self.menu_batch.add(24, pyglet.gl.GL_QUADS, None, ('v3f', voxel))

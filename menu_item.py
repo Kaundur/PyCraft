@@ -52,9 +52,15 @@ class MenuItem:
         if self.mouse_over:
             color = mouse_over_color
 
-        item = self.x+side_offset*self.side[0], self.y+height_offset, self.z+side_offset*self.side[2], self.x+side_offset*self.side[0], self.y+height_offset+height, self.z+side_offset*self.side[2], self.x+(1.0-side_offset)*self.side[0], self.y+height_offset+height, self.z+(1.0-side_offset)*self.side[2], self.x+(1.0-side_offset)*self.side[0], self.y+height_offset, self.z+(1.0-side_offset)*self.side[2]
+        item = self.x+side_offset*self.side[0], self.y+height_offset, self.z+side_offset*self.side[2], \
+               self.x+side_offset*self.side[0], self.y+height_offset+height, self.z+side_offset*self.side[2], \
+               self.x+(1.0-side_offset)*self.side[0], self.y+height_offset+height, \
+               self.z+(1.0-side_offset)*self.side[2], \
+               self.x+(1.0-side_offset)*self.side[0], self.y+height_offset, \
+               self.z+(1.0-side_offset)*self.side[2]
 
-        item_texture = textures.menu_items()
+
+        #item_texture = textures.menu_items()
 
 
         #glEnable(GL_TEXTURE_2D)
@@ -65,7 +71,7 @@ class MenuItem:
         #image = pyglet.image.load('Images/GameMenu.png')
         #texture = image.get_texture()
 
-        coords = [0, 0, 0, 1, 1, 1, 1, 0]
+        #coords = [0, 0, 0, 1, 1, 1, 1, 0]
         #pyglet.graphics.draw(4, pyglet.gl.GL_QUADS, ('v3f', item), ('t2f', coords))
         pyglet.graphics.draw(4, pyglet.gl.GL_LINE_LOOP, ('v3f', item),  ('c3B', color))
 

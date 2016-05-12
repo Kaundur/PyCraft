@@ -4,7 +4,6 @@ import math
 from pyclid import Vec2, Vec3
 
 import math_helper
-import chunk
 import block
 
 
@@ -37,7 +36,6 @@ class Player:
         self.connecting_block = None
 
         self.action_bar_item_map = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
-
 
     def update_active_item(self, item_index):
         self.active_item_id = item_index
@@ -84,7 +82,6 @@ class Player:
                 if keys[key.SPACE]:
                     self.velocity.y = 0.1
 
-        # TODO - This should only update when the player changes position
         self.world.update_position(self.position)
 
     def move(self, keys):
@@ -165,7 +162,6 @@ class Player:
         pass
 
     def _do_vertical_update(self):
-        # TODO - Kind of strange, most likely due to the flipping of a world and player_height
         # Block is 1 high,
         feet_position = (int(self.position.x), int(self.position.y-2.0), int(self.position.z))
 

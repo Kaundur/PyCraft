@@ -13,16 +13,20 @@ import textures
 
 FRAMES_PER_SECOND = 30
 
+# Needs to be an integer
+GAME_TICK = int(FRAMES_PER_SECOND/1.0)
+
 
 class Game(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         # TODO - How does this super work, overrides the init of Window
         super(Game, self).__init__(*args, **kwargs)
+        self.tick_counter = 0
 
         self.textures = textures.Textures()
 
         self.game_menu = menu.MenuController(self.textures, self)
-        #self.main_menu = menu.MainMenu(self)
+
         self.main_menu = None
 
         self.render = renderer.Renderer(self)
@@ -71,7 +75,14 @@ class Game(pyglet.window.Window):
         #if self.in_menu:
         #    self.main_menu.on_mouse_release(x, y, button, modifiers)
 
+    def do_tick(self):
+        self.tick_counter += 1
+        if self.tick_counter % GAME_TICK == 0:
+            self.world.do_tick()
+            self.tick_counter = 0
+
     def on_draw(self):
+        #self.do_tick()
 
 
         # Maybe render is a bad idea
@@ -106,7 +117,6 @@ class Game(pyglet.window.Window):
         #    self.main_menu.render_2d()
         #else:
         renderer.draw_cursor([self.width/2.0, self.height/2.0])
-
 
 
     def exit_game(self):
