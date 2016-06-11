@@ -1,5 +1,6 @@
 import math
 import Queue
+import thread
 
 from noise import pnoise2, snoise2, pnoise3, snoise3
 from pyclid import Vec3
@@ -27,6 +28,8 @@ class World:
         self.chunks = {}
         self.surface = {}
 
+        self.generation_threads = []
+
     def generate_world(self, position):
         chunk_x = int(position.x/16)
         chunk_y = int(position.y/16)
@@ -36,11 +39,13 @@ class World:
             for z in range(chunk_z-self.generate_distance, chunk_z+self.generate_distance):
                 if (x, 0, z) not in self.chunks:
                     self.generate_surface(x, z)
-                    max_y_chunk = chunk_y +self.generate_distance
+                    max_y_chunk = chunk_y + self.generate_distance
                     for y in range(max_y_chunk):
                         if (x, y, z) not in self.chunks:
+                            #thread.start_new_thread(self.generate_new_chunk, (x, y, z))
                             self.generate_new_chunk(x, y, z)
 
+        # TODO - Thread new chunk, wait for threads to finish here
         self._generate_chunk_batches(position)
 
     def _generate_chunk_batches(self, position):
@@ -54,7 +59,7 @@ class World:
                 max_y_chunk = chunk_y + self.generate_distance+1
                 for y in range(max_y_chunk):
                     if (x, y, z) in self.chunks:
-                        self.chunks[(x, y, z)].find_exposed_blocks()
+                        thread.start_new_thread(self.chunks[(x, y, z)].find_exposed_blocks, ())
 
     def generate_surface(self, chunk_x, chunk_z):
         real_pos_x = chunk_x*16

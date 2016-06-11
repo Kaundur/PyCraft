@@ -5,6 +5,8 @@ import math_helper
 import textures
 import block
 
+import letters
+
 
 # TODO - This shouldn't draw anything
 class MenuItem:
@@ -40,7 +42,7 @@ class MenuItem:
 
         # TODO - Add blocks as pixel art for words, attach to menu item frame
         # TODO - Cannot make drawing small enough
-        block.highlight_cube(self.x, self.y, self.z, 0.00001)
+        #block.highlight_cube(self.x, self.y, self.z, 0.00001)
 
 
         if self.active and math_helper.point_in_poly(cursor_position[0], cursor_position[1], poly):
@@ -74,6 +76,9 @@ class MenuItem:
         #coords = [0, 0, 0, 1, 1, 1, 1, 0]
         #pyglet.graphics.draw(4, pyglet.gl.GL_QUADS, ('v3f', item), ('t2f', coords))
         pyglet.graphics.draw(4, pyglet.gl.GL_LINE_LOOP, ('v3f', item),  ('c3B', color))
+
+        letters.draw_text(self.x, self.y, self.z)
+
 
     def click(self):
         if self.mouse_over:

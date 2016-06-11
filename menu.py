@@ -19,7 +19,7 @@ class MenuController:
 
     def render(self):
         self.action_bar.render()
-        #self.main_menu.render()
+        self.main_menu.render()
 
     def update_active_item(self, active_item):
         self.action_bar.update_active_item(active_item)
