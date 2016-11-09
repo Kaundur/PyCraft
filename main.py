@@ -28,6 +28,7 @@ class Game(pyglet.window.Window):
         self.game_menu = menu.MenuController(self.textures, self)
 
         self.main_menu = None
+        self.main_menu = menu.MainMenu(self)
 
         self.render = renderer.Renderer(self)
 
@@ -104,8 +105,8 @@ class Game(pyglet.window.Window):
 
         self.world.render()
 
-        #if self.in_menu:
-        #    self.main_menu.render()
+        if self.in_menu:
+            self.main_menu.render()
 
         self.player.draw_focused_block()
 
@@ -113,10 +114,10 @@ class Game(pyglet.window.Window):
 
         self.render.set_2d()
 
-        #if self.in_menu:
-        #    self.main_menu.render_2d()
-        #else:
-        renderer.draw_cursor([self.width/2.0, self.height/2.0])
+        if self.in_menu:
+            self.main_menu.render_2d()
+        else:
+            renderer.draw_cursor([self.width/2.0, self.height/2.0])
 
 
     def exit_game(self):
