@@ -2,8 +2,6 @@ import pyglet
 from pyglet.gl import *
 from pyglet.window import key
 
-import pyclid
-
 import renderer
 import menu
 import world
@@ -12,8 +10,8 @@ import textures
 
 
 FRAMES_PER_SECOND = 30
-
 # Needs to be an integer
+# TODO - Whats the divide by 1.0 for?
 GAME_TICK = int(FRAMES_PER_SECOND/1.0)
 
 
@@ -58,22 +56,13 @@ class Game(pyglet.window.Window):
         pass
 
     def on_mouse_motion(self, x, y, dx, dy):
-        #if self.in_menu:
-        #    self.main_menu.mouse_motion(x, y, dx, dy)
-        #else:
         self.player.on_mouse_motion(x, y, dx, dy)
 
     def on_mouse_press(self, x, y, button, modifier):
-        #if self.in_menu:
-        #    self.main_menu.on_mouse_press(x, y, button, modifier)
-
-        #else:
         self.player.on_mouse_press(x, y, button, modifier)
 
     def on_mouse_release(self, x, y, button, modifiers):
         pass
-        #if self.in_menu:
-        #    self.main_menu.on_mouse_release(x, y, button, modifiers)
 
     def do_tick(self):
         self.tick_counter += 1
@@ -82,12 +71,6 @@ class Game(pyglet.window.Window):
             self.tick_counter = 0
 
     def on_draw(self):
-        #self.do_tick()
-
-
-        # Maybe render is a bad idea
-        # Could just use to set up opengl
-
         self.player.handle_keys(self.keys)
         self.player.update_player()
 
@@ -104,20 +87,14 @@ class Game(pyglet.window.Window):
 
         self.world.render()
 
-        #if self.in_menu:
-        #    self.main_menu.render()
-
         self.player.draw_focused_block()
 
+        # For now this just renders the action bar
         self.game_menu.render()
 
         self.render.set_2d()
 
-        #if self.in_menu:
-        #    self.main_menu.render_2d()
-        #else:
         renderer.draw_cursor([self.width/2.0, self.height/2.0])
-
 
     def exit_game(self):
         pyglet.app.exit()
