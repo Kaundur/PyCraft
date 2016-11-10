@@ -12,6 +12,15 @@ class Player:
         self.world = world
         self.player_height = 0.0
         self.position = Vec3(8, 60, 8)
+
+        self.keys = key.KeyStateHandler()
+
+        self.action_bar_keys = [key._1,
+                                key._2,
+                                key._3,
+                                key._4,
+                                key._5]
+
         # negative rotation is up
         # -90 up, 90 down
         self.rotation = Vec2(100, 10)
@@ -25,7 +34,7 @@ class Player:
 
         self.velocity = Vec3()
 
-        # TODO - Should be external of player
+        # TODO - Should be external of player - Need a physics class
         self.dt = 1.0/30.0
 
         self.sight_vector = Vec3()
@@ -35,6 +44,7 @@ class Player:
         self.focused_block = None
         self.connecting_block = None
 
+        # Map action bar item to block id
         self.action_bar_item_map = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
 
     def update_active_item(self, item_index):
@@ -53,15 +63,16 @@ class Player:
             block.highlight_cube(x, y, z, 1)
 
     def handle_action_bar_keys(self, keys):
-        if keys[key._1]:
+        # TODO - Store the keys in an array so they can be updated
+        if keys[self.action_bar_keys[0]]:
             self.update_active_item(1)
-        elif keys[key._2]:
+        elif keys[self.action_bar_keys[1]]:
             self.update_active_item(2)
-        elif keys[key._3]:
+        elif keys[self.action_bar_keys[2]]:
             self.update_active_item(3)
-        elif keys[key._4]:
+        elif keys[self.action_bar_keys[3]]:
             self.update_active_item(4)
-        elif keys[key._5]:
+        elif keys[self.action_bar_keys[4]]:
             self.update_active_item(5)
 
     def handle_keys(self, keys):

@@ -22,10 +22,8 @@ class Game(pyglet.window.Window):
         self.tick_counter = 0
 
         self.textures = textures.Textures()
-
+        
         self.game_menu = menu.MenuController(self.textures, self)
-
-        self.main_menu = None
 
         self.render = renderer.Renderer(self)
 
@@ -41,28 +39,11 @@ class Game(pyglet.window.Window):
         self.keys = key.KeyStateHandler()
         self.push_handlers(self.keys)
 
-        # If is in menu or in game
-        self.game_state = None
-        self.in_menu = False
-
-    def toggle_menu(self):
-        self.in_menu = not self.in_menu
-
-    def on_key_press(self, symbol, modifiers):
-        if symbol == key.ESCAPE:
-            self.toggle_menu()
-
-    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-        pass
-
     def on_mouse_motion(self, x, y, dx, dy):
         self.player.on_mouse_motion(x, y, dx, dy)
 
     def on_mouse_press(self, x, y, button, modifier):
         self.player.on_mouse_press(x, y, button, modifier)
-
-    def on_mouse_release(self, x, y, button, modifiers):
-        pass
 
     def do_tick(self):
         self.tick_counter += 1
