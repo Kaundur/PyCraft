@@ -1,9 +1,12 @@
 import pyglet
 from pyglet.gl import *
+
 import pyclid
-import random
 
 import block
+
+
+CHUNK_SIZE = pyclid.Vec3(16, 16, 16)
 
 
 class Chunk:
@@ -13,7 +16,6 @@ class Chunk:
         self.batch_positions = {}
         self.update_list = []
         self.position = pyclid.Vec3(x, y, z)
-        self.CHUNK_SIZE = pyclid.Vec3(16, 16, 16)
 
         self.batch_generated = False
 
@@ -23,25 +25,21 @@ class Chunk:
         self.world = world
 
     def generate_chunk_default(self):
-        for x in xrange(self.CHUNK_SIZE.x):
-            for z in xrange(self.CHUNK_SIZE.z):
-                for y in xrange(self.CHUNK_SIZE.y):
+        for x in xrange(CHUNK_SIZE.x):
+            for z in xrange(CHUNK_SIZE.z):
+                for y in xrange(CHUNK_SIZE.y):
                     real_x = x+self.position.x*16
                     real_y = y+self.position.y*16
                     real_z = z+self.position.z*16
                     surface_point = self.world.get_surface(real_x, real_z)
                     if (self.position.y*16 + y) <= surface_point:
-
                         # Select block id based on distance to surface block
                         block_id = 1
                         if real_y <= surface_point-5:
                             block_id = 2
                         elif real_y <= surface_point-1:
                             block_id = 0
-
                         self.create_block((real_x, real_y, real_z), block_id, False)
-
-        #self.find_exposed_blocks()
 
     def find_exposed_blocks(self):
         if not self.batch_generated:
@@ -61,6 +59,8 @@ class Chunk:
                     self.check_exposed_face(x, y, z)
             self.batch_generated = True
 
+    # TODO - Would be quicker on generation to add all faces to an array
+    # TODO - and move all to a batch at the end of genreation
     def create_exposed_face(self, x, y, z):
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
 
@@ -82,9 +82,9 @@ class Chunk:
         if not self.world.find_block((x, y, z+1)):
             self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
 
-
+    # TODO - Is very ugly, can this function be reduced
     def check_exposed_face(self, x, y, z, edge=False):
-        # Handle edge of chunk values
+        # Handle the edges of the chunk, difficult to check since new chunk may not exist yet
         if edge:
             if not self.world.find_block((x, y+1, z)):
                 self.world.block_generation_queue.put((self, x, y, z))
@@ -177,57 +177,12 @@ class Chunk:
     def add_to_update_list(self, position, block_object):
         self.update_list.append((position, block_object))
 
-    def update_block_new(self):
-        if len(self.update_list) > 0:
-            pass
-            # Call world? so we can update surrounding blocks across chunks
-
     def render(self):
         self.batch.draw()
 
-    def grass_update(self, x, y, z, other_block_obj):
-        if other_block_obj.block_id == 0:
-            other_block_obj.update_block_id((x, y, z), 1, self)
-            other_block_obj.clear_batch()
-            self._update_surrounding_blocks(x, y, z)
-            self.create_batch_block(x, y, z)
 
-    def do_grass_grow(self, x, y, z):
-        if (x+1, y, z) in self.blocks and (x+1, y+1, z) not in self.blocks:
-            if random.randint(0, 10) > 8:
-                other_block_obj = self.blocks[(x+1, y, z)]
-                self.grass_update(x+1, y, z, other_block_obj)
-        # if (x-1, y, z) in self.blocks and (x-1, y+1, z) not in self.blocks:
-        #     if random.randint(0, 10) > 8:
-        #         other_block_obj = self.blocks[(x-1, y, z)]
-        #         self.grass_update(x-11, y, z, other_block_obj)
-        # if (x, y, z+1) in self.blocks and (x, y+1, z+1) not in self.blocks:
-        #     if random.randint(0, 10) > 8:
-        #         other_block_obj = self.blocks[(x, y, z+1)]
-        #         self.grass_update(x, y, z+1, other_block_obj)
-        # if (x, y, z-1) in self.blocks and (x, y+1, z-1) not in self.blocks:
-        #     if random.randint(0, 10) > 8:
-        #         other_block_obj = self.blocks[(x, y, z-1)]
-        #         self.grass_update(x, y, z-1, other_block_obj)
-
-    def do_tick(self):
-        delete_list = []
-        for list_index, (block_position, block_obj) in enumerate(self.update_list):
-            # Grass
-            if block_obj.block_id == 1:
-                x = block_position[0]
-                y = block_position[1]
-                z = block_position[2]
-                self.do_grass_grow(x, y, z)
-                # Calling world.find_block is very slow
-                # if self.world.find_block((x, y+1, z)):
-                #     # Note, this tick is causing lag
-                #     block_obj.update_block_id(block_position, 0, self)
-                #     delete_list.append((block_position, block_obj))
-                #     block_obj.clear_batch()
-                #     self._update_surrounding_blocks(x, y, z)
-                #     self.create_batch_block(x, y, z)
-
-        if delete_list:
-            for index_tuple in delete_list[::-1]:
-                self.update_list.remove(index_tuple)
+def get_chunk_coords(position):
+    chunk_x = int(position.x / CHUNK_SIZE.x)
+    chunk_y = int(position.y / CHUNK_SIZE.y)
+    chunk_z = int(position.z / CHUNK_SIZE.z)
+    return pyclid.Vec3(chunk_x, chunk_y, chunk_z)

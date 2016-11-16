@@ -10,9 +10,6 @@ import textures
 
 
 FRAMES_PER_SECOND = 30
-# Needs to be an integer
-# TODO - Whats the divide by 1.0 for?
-GAME_TICK = int(FRAMES_PER_SECOND/1.0)
 
 
 class Game(pyglet.window.Window):
@@ -22,7 +19,7 @@ class Game(pyglet.window.Window):
         self.tick_counter = 0
 
         self.textures = textures.Textures()
-        
+
         self.game_menu = menu.MenuController(self.textures, self)
 
         self.render = renderer.Renderer(self)
@@ -39,17 +36,20 @@ class Game(pyglet.window.Window):
         self.keys = key.KeyStateHandler()
         self.push_handlers(self.keys)
 
+        # If is in menu or in game
+        self.game_state = None
+        self.in_menu = False
+
+    # TODO - Key handing should be passed to player here
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ESCAPE:
+            self.exit_game()
+
     def on_mouse_motion(self, x, y, dx, dy):
         self.player.on_mouse_motion(x, y, dx, dy)
 
     def on_mouse_press(self, x, y, button, modifier):
         self.player.on_mouse_press(x, y, button, modifier)
-
-    def do_tick(self):
-        self.tick_counter += 1
-        if self.tick_counter % GAME_TICK == 0:
-            self.world.do_tick()
-            self.tick_counter = 0
 
     def on_draw(self):
         self.player.handle_keys(self.keys)
@@ -77,7 +77,8 @@ class Game(pyglet.window.Window):
 
         renderer.draw_cursor([self.width/2.0, self.height/2.0])
 
-    def exit_game(self):
+    @staticmethod
+    def exit_game():
         pyglet.app.exit()
 
 

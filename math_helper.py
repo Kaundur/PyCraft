@@ -1,9 +1,9 @@
 import math
 from pyglet.gl import *
 import ctypes
-import pyclid
 
 
+# Bound a value to a min/max value
 def clip(value, min_value, max_value):
     if value > max_value:
         value = max_value
@@ -69,7 +69,7 @@ def los_collision_short(world, player):
 
         return None, None
 
-
+# Return true if point (x, y) is within a polygon (Array poly)
 def point_in_poly(x, y, poly):
     n = len(poly)
     inside = False
@@ -109,13 +109,10 @@ def get_3d_menu_screen_coords(point):
         projection = sixteendv() # Where The 16 Doubles Of The Projection Matrix Are To Be Stored
         glGetDoublev(GL_PROJECTION_MATRIX, projection) # Retrieve The Projection Matrix
 
-        X = ctypes.c_double()
-        Y = ctypes.c_double()
-        Z = ctypes.c_double()
-        # Turn world coordinates of the menu button into screen coordinates to test if we have moused over
-        result = gluProject(ctypes.c_double(point[0]), ctypes.c_double(point[1]), ctypes.c_double(point[2]), modelview, projection, viewport, ctypes.byref(X), ctypes.byref(Y), ctypes.byref(Z))
-        #print X.value, Y.value, Z.value
-        return X.value, Y.value
+        x_ctype = ctypes.c_double()
+        y_ctype = ctypes.c_double()
+        # z_ctype = ctypes.c_double()
+        return x_ctype.value, y_ctype.value
 
 
 def is_within_rect(m, a, b, c, d):

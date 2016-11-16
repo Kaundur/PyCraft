@@ -31,32 +31,28 @@ class World:
         self.generation_threads = []
 
     def generate_world(self, position):
-        chunk_x = int(position.x/16)
-        chunk_y = int(position.y/16)
-        chunk_z = int(position.z/16)
-        self._loaded_position = Vec3(chunk_x, chunk_y, chunk_z)
-        for x in range(chunk_x-self.generate_distance, chunk_x+self.generate_distance):
-            for z in range(chunk_z-self.generate_distance, chunk_z+self.generate_distance):
+        # Get chunk coordinates (player coordinates divided by chunk size and floored)
+        # 5, 20, 40 >>> 5//16, 20//16, 40//16 >>> 0, 1, 2
+        # Store the position, so that we have a reference point to generate and render the chunks around
+        self._loaded_position = chunk.get_chunk_coords(position)
+
+        for x in range(self._loaded_position.x-self.generate_distance, self._loaded_position.x + self.generate_distance):
+            for z in range(self._loaded_position.z-self.generate_distance, self._loaded_position.z +self.generate_distance):
                 if (x, 0, z) not in self.chunks:
                     self.generate_surface(x, z)
-                    max_y_chunk = chunk_y + self.generate_distance
+                    # TODO - What is this doing?
+                    max_y_chunk = self._loaded_position.y + self.generate_distance
                     for y in range(max_y_chunk):
                         if (x, y, z) not in self.chunks:
-                            #thread.start_new_thread(self.generate_new_chunk, (x, y, z))
                             self.generate_new_chunk(x, y, z)
 
-        # TODO - Thread new chunk, wait for threads to finish here
         self._generate_chunk_batches(position)
 
     def _generate_chunk_batches(self, position):
         # Generate the faces of the surface
-        chunk_x = int(position.x/16)
-        chunk_y = int(position.y/16)
-        chunk_z = int(position.z/16)
-
-        for x in range(chunk_x-self.generate_distance+1, chunk_x+self.generate_distance-1):
-            for z in range(chunk_z-self.generate_distance+1, chunk_z+self.generate_distance-1):
-                max_y_chunk = chunk_y + self.generate_distance+1
+        for x in range(self._loaded_position.x-self.generate_distance+1, self._loaded_position.x+self.generate_distance-1):
+            for z in range(self._loaded_position.z-self.generate_distance+1, self._loaded_position.z+self.generate_distance-1):
+                max_y_chunk = self._loaded_position.y + self.generate_distance+1
                 for y in range(max_y_chunk):
                     if (x, y, z) in self.chunks:
                         thread.start_new_thread(self.chunks[(x, y, z)].find_exposed_blocks, ())
@@ -148,11 +144,3 @@ class World:
             self.current_centered_chunk = self.find_chunk_coords(coords)
             self.generate_world(coords)
 
-    def do_tick(self):
-        # For chunks within the render distance apply the tick
-        render_rad = 5
-        for x in range(self._loaded_position.x-render_rad, self._loaded_position.x+render_rad+1):
-            for z in range(self._loaded_position.z-render_rad, self._loaded_position.z+render_rad+1):
-                for y in range(self._loaded_position.y-render_rad, self._loaded_position.y+render_rad+1):
-                    if (x, y, z) in self.chunks:
-                        self.chunks[(x, y, z)].do_tick()

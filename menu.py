@@ -35,14 +35,10 @@ class ActionBar:
             self.item_rotate = 0
 
     def render(self):
-        self.render_action_bar()
-
-    def render_action_bar(self):
         # Switch off depth test, so our 3D gui appears on top of the game
         glDisable(GL_DEPTH_TEST)
 
         self.action_bar_item()
-
         glEnable(GL_DEPTH_TEST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
@@ -50,13 +46,8 @@ class ActionBar:
 
     def initialise_action_bar_items(self):
         self.action_bar_items = []
-        # z = 0.0
-        # y = 0.0
-        # x = 0.0
-        # Voxel doesnt need a location, just move based on position in action bar.
-        # This way we can move the position of an item without recreating the batch
-        # voxel = block.voxel(x, y, z, 1.0)
-        voxel = block.voxel(0, 0, 0, 1.0)
+        # Base voxel for the action bar
+        voxel = block.cube_coordinates(0, 0, 0, 1.0)
         for i in range(5):
             v_texture = self.game_textures.get_texture_full(i)
             self.action_bar_items.append(pyglet.graphics.Batch())
@@ -69,7 +60,6 @@ class ActionBar:
 
         for i in range(5):
             active = False
-
             if i+1 == self.active_item:
                 active = True
 

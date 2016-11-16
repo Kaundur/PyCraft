@@ -8,7 +8,6 @@ class Block:
         self.block_id = block_id
         # Store batch faces so its easy to delete
         self.batch_positions = {}
-
         # Dont need to store a reference to the chunk in the block object
         self.update_block_id(position, self.block_id, chunk_obj)
 
@@ -29,22 +28,22 @@ class Block:
 
 def highlight_cube(x, y, z, size, extension=0.1):
     # Extension of cube around normal block size
-    highlight_voxel = voxel(x, y, z, size, extension)
+    highlight_frame = cube_coordinates(x, y, z, size, extension)
 
     # Make rendering wireframe to draw the highlight cube
     # Is this really faster than glLines?
     pyglet.gl.glPolygonMode(pyglet.gl.GL_FRONT_AND_BACK, pyglet.gl.GL_LINE)
-    pyglet.graphics.draw(24, pyglet.gl.GL_QUADS, ('v3f', highlight_voxel), ('c3b', [0, 0, 100]*24))
+    pyglet.graphics.draw(24, pyglet.gl.GL_QUADS, ('v3f', highlight_frame), ('c3b', [0, 0, 100]*24))
     pyglet.gl.glPolygonMode(pyglet.gl.GL_FRONT_AND_BACK, pyglet.gl.GL_FILL)
 
 
-def voxel(x, y, z, s=1, e=0):
+def cube_coordinates(x, y, z, s=1, e=0):
     # s - size
     # e - extension
     s += e
 
     # Return all vertices of block, groups of 3 coords
-    voxel_vertices = [x-e, y+s, z-e,  x-e, y+s, z+s,  x+s, y+s, z+s,  x+s, y+s, z-e,
+    coordinates = [x-e, y+s, z-e,  x-e, y+s, z+s,  x+s, y+s, z+s,  x+s, y+s, z-e,
                       x-e, y-e, z-e,  x+s, y-e, z-e,  x+s, y-e, z+s,  x-e, y-e, z+s,
 
                       x+s, y+s, z-e,  x+s, y+s, z+s,  x+s, y-e, z+s,  x+s, y-e, z-e,
@@ -53,7 +52,7 @@ def voxel(x, y, z, s=1, e=0):
                       x-e, y+s, z-e,  x+s, y+s, z-e,  x+s, y-e, z-e,  x-e, y-e, z-e,
                       x+s, y+s, z+s,  x-e, y+s, z+s,  x-e, y-e, z+s,  x+s, y-e, z+s]
 
-    return voxel_vertices
+    return coordinates
 
 
 def render_face(x, y, z, face, batch, texture_group, texture_coords):
