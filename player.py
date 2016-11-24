@@ -52,10 +52,8 @@ class Player:
         self.gui.update_active_item(self.active_item_id)
 
     def get_sight_vector(self):
-        math_helper.get_sight_vector(self)
-        prev_block, pos = math_helper.los_collision_short(self.world, self)
-        self.focused_block = pos
-        self.connecting_block = prev_block
+        self.sight_vector = math_helper.get_sight_vector(self.rotation)
+        self.connecting_block, self.focused_block = math_helper.los_collision(self.world, self.position, self.sight_vector)
 
     def draw_focused_block(self):
         if self.focused_block:
@@ -173,7 +171,8 @@ class Player:
         pass
 
     def _do_vertical_update(self):
-        # Block is 1 high,
+
+        # Block is 1 high. Is block also 1 down? accounts for 2.0
         feet_position = (int(self.position.x), int(self.position.y-2.0), int(self.position.z))
 
         on_ground = self.world.find_block(feet_position)

@@ -17,7 +17,7 @@ class MenuController:
     def update_active_item(self, active_item):
         self.action_bar.update_active_item(active_item)
 
-
+# TODO - Have class for each action bar item
 class ActionBar:
     def __init__(self, game_textures):
         self.game_textures = game_textures

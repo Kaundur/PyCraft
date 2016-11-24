@@ -26,7 +26,6 @@ class Renderer:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
-
     def toggle_fullscreen(self):
         self.full_screen = not self.full_screen
         if self.full_screen:
@@ -63,16 +62,13 @@ class Renderer:
         glLoadIdentity()
 
 
-def draw_cursor(coords):
-    coords[0] = int(coords[0])
-    coords[1] = int(coords[1])
-    x, y = int(coords[0]), int(coords[1])
-    #print coords
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', coords))
+def draw_crosshair(coords):
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x, coords.y]))
 
+    # Draw extra points around centre
     c_width = 10
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [x, y-c_width]))
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [x, y+c_width]))
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [x-c_width, y]))
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [x+c_width, y]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x,         coords.y-c_width]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x,         coords.y+c_width]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x-c_width, coords.y]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x+c_width, coords.y]))
 

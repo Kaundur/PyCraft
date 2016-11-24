@@ -13,7 +13,6 @@ class World:
         # Load in textures per world
         self.textures = textures
         # chunks around the player to render
-        self.render_distance = 2
         self.gravity = -15.0
 
         self.current_centered_chunk = None
@@ -24,7 +23,8 @@ class World:
         self._loaded_position = Vec3()
 
         # Chunks around the player to generate
-        self.generate_distance = 5
+        self.generate_distance = 2
+        self.render_distance = 1
         self.chunks = {}
         self.surface = {}
 
@@ -50,9 +50,9 @@ class World:
 
     def _generate_chunk_batches(self, position):
         # Generate the faces of the surface
-        for x in range(self._loaded_position.x-self.generate_distance+1, self._loaded_position.x+self.generate_distance-1):
-            for z in range(self._loaded_position.z-self.generate_distance+1, self._loaded_position.z+self.generate_distance-1):
-                max_y_chunk = self._loaded_position.y + self.generate_distance+1
+        for x in range(self._loaded_position.x-self.render_distance, self._loaded_position.x+self.render_distance):
+            for z in range(self._loaded_position.z-self.render_distance, self._loaded_position.z+self.render_distance):
+                max_y_chunk = self._loaded_position.y + self.render_distance
                 for y in range(max_y_chunk):
                     if (x, y, z) in self.chunks:
                         thread.start_new_thread(self.chunks[(x, y, z)].find_exposed_blocks, ())

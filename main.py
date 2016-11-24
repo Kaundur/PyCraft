@@ -8,6 +8,8 @@ import world
 import player
 import textures
 
+import pyclid
+
 
 FRAMES_PER_SECOND = 30
 
@@ -16,6 +18,13 @@ class Game(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         # TODO - How does this super work, overrides the init of Window
         super(Game, self).__init__(*args, **kwargs)
+
+        # Will need updating if the screen size changes
+        self.cursor_coords = pyclid.Vec2(self.width/2.0, self.height/2.0)
+        # TODO - this should be built in to pyclid
+        self.cursor_coords.x = int(self.cursor_coords.x)
+        self.cursor_coords.y = int(self.cursor_coords.y)
+
         self.tick_counter = 0
 
         self.textures = textures.Textures()
@@ -75,7 +84,8 @@ class Game(pyglet.window.Window):
 
         self.render.set_2d()
 
-        renderer.draw_cursor([self.width/2.0, self.height/2.0])
+        # TODO - Should package crosshair, actionbar together into gui class
+        renderer.draw_crosshair(self.cursor_coords)
 
     @staticmethod
     def exit_game():

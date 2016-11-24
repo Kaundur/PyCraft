@@ -2,6 +2,8 @@ import math
 from pyglet.gl import *
 import ctypes
 
+import pyclid
+
 
 # Bound a value to a min/max value
 def clip(value, min_value, max_value):
@@ -12,35 +14,30 @@ def clip(value, min_value, max_value):
     return value
 
 
-def get_sight_vector(player):
-    x, y = player.rotation.x, player.rotation.y
-
+def get_sight_vector(rotation):
     # TODO - Rewrite notes, y has be made negative
     # y ranges from -90 to 90, or -pi/2 to pi/2, so m ranges from 0 to 1 and
     # is 1 when looking ahead parallel to the ground and 0 when looking
     # straight up or down.
-    m = math.cos(math.radians(-y))
+    m = math.cos(math.radians(-rotation.y))
     # dy ranges from -1 to 1 and is -1 when looking straight down and 1 when
     # looking straight up.
-    dy = math.sin(math.radians(-y))
-    dx = math.cos(math.radians(x - 90)) * m
-    dz = math.sin(math.radians(x - 90)) * m
+    dy = math.sin(math.radians(-rotation.y))
+    dx = math.cos(math.radians(rotation.x - 90)) * m
+    dz = math.sin(math.radians(rotation.x - 90)) * m
 
-    # Is this ok? generating an object all the time
-    player.sight_vector.x = dx
-    player.sight_vector.y = dy
-    player.sight_vector.z = dz
+    return pyclid.Vec3(dx, dy, dz)
 
 
-def los_collision_short(world, player):
+def los_collision(world, position, sight_vector):
     # TODO - This should accept the sight vector and position, not the player
-    if player.sight_vector:
-        sight_position = player.position
+    if sight_vector:
+        sight_position = position
         # step size to increase accuracy of collision
         step_size = 0.1
         max_range = 10
 
-        step_vector = player.sight_vector*step_size
+        step_vector = sight_vector*step_size
 
         m = 100
         previous_block = None
@@ -69,7 +66,9 @@ def los_collision_short(world, player):
 
         return None, None
 
+
 # Return true if point (x, y) is within a polygon (Array poly)
+# Note, this is fairly complex, can this be reduced
 def point_in_poly(x, y, poly):
     n = len(poly)
     inside = False
@@ -99,7 +98,7 @@ def get_3d_menu_screen_coords(point):
         glGetIntegerv(GL_VIEWPORT, vp)
 
 
-        #https://code.google.com/p/geoffrey/source/browse/trunk/selection.py?r=1&spec=svn6
+        # https://code.google.com/p/geoffrey/source/browse/trunk/selection.py?r=1&spec=svn6
         fouriv = ctypes.c_int * 4
         sixteendv = ctypes.c_double * 16
         viewport = fouriv() # Where The Viewport Values Will Be Stored
@@ -121,7 +120,6 @@ def is_within_rect(m, a, b, c, d):
     # Only use 2d coords here, as we are only interested in the on screen coords
 
     total_area = area_triangle(m, a, b) + area_triangle(m, b, c) + area_triangle(m, c, d) + area_triangle(m, d, a)
-
     rect_area = area_rect(a, b, c, d)
 
     if total_area > rect_area:
@@ -136,5 +134,5 @@ def area_triangle(a, b, c):
 
 
 def area_rect(a, b, c, d):
-    # shoelace_formula - calculating from points, could be on a non-standard angle
+    # shoelace_formula - calculating from points, can be used on non 90deg angles
     return 0.5*(a[0]*b[1] + b[0]*c[1] + c[0]*d[1] + d[0]*a[1] - a[1]*b[0] - b[1]*c[0] - c[1]*d[0] - d[1]*a[0])

@@ -61,66 +61,52 @@ class Chunk:
 
     # TODO - Would be quicker on generation to add all faces to an array
     # TODO - and move all to a batch at the end of genreation
+    # TODO - Can this be reduced like check_exposed_face
     def create_exposed_face(self, x, y, z):
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
-
+        faces = []
         # TODO - Using world.find_block will be slower than checking if the block is an edge case
         if not self.world.find_block((x, y+1, z)):
-            self.blocks[(x, y, z)].add_face(x, y, z, 0, self.batch, self.textures.texture_main, texture_coords[0])
+            faces.append(0)
         # Don't render bottom of world y != 0
         # Check y != 0 first, as this is a quicker call than find_block
         if y != 0 and not self.world.find_block((x, y-1, z)):
-            self.blocks[(x, y, z)].add_face(x, y, z, 1, self.batch, self.textures.texture_main, texture_coords[1])
-
+            faces.append(1)
         if not self.world.find_block((x+1, y, z)):
-            self.blocks[(x, y, z)].add_face(x, y, z, 2, self.batch, self.textures.texture_main, texture_coords[2])
+            faces.append(2)
         if not self.world.find_block((x-1, y, z)):
-            self.blocks[(x, y, z)].add_face(x, y, z, 3, self.batch, self.textures.texture_main, texture_coords[3])
-
+            faces.append(3)
         if not self.world.find_block((x, y, z-1)):
-            self.blocks[(x, y, z)].add_face(x, y, z, 4, self.batch, self.textures.texture_main, texture_coords[4])
+            faces.append(4)
         if not self.world.find_block((x, y, z+1)):
-            self.blocks[(x, y, z)].add_face(x, y, z, 5, self.batch, self.textures.texture_main, texture_coords[5])
+            faces.append(5)
 
-    # TODO - Is very ugly, can this function be reduced
+        if faces:
+            self.blocks[(x, y, z)].add_faces(x, y, z, faces, self.batch, self.textures.texture_main, texture_coords)
+
     def check_exposed_face(self, x, y, z, edge=False):
         # Handle the edges of the chunk, difficult to check since new chunk may not exist yet
-        if edge:
-            if not self.world.find_block((x, y+1, z)):
-                self.world.block_generation_queue.put((self, x, y, z))
-            elif not self.world.find_block((x, y-1, z)):
-                self.world.block_generation_queue.put((self, x, y, z))
+        add_to_queue = False
 
-            elif not self.world.find_block((x+1, y, z)):
-                self.world.block_generation_queue.put((self, x, y, z))
-            elif not self.world.find_block((x-1, y, z)):
-                self.world.block_generation_queue.put((self, x, y, z))
-
-            elif not self.world.find_block((x, y, z-1)):
-                self.world.block_generation_queue.put((self, x, y, z))
-            elif not self.world.find_block((x, y, z+1)):
-                self.world.block_generation_queue.put((self, x, y, z))
-        else:
-            if (x, y+1, z) not in self.blocks:
-                self.world.block_generation_queue.put((self, x, y, z))
-            elif (x, y-1, z) not in self.blocks:
-                self.world.block_generation_queue.put((self, x, y, z))
-
-            elif (x+1, y, z) not in self.blocks:
-                self.world.block_generation_queue.put((self, x, y, z))
-            elif (x-1, y, z) not in self.blocks:
-                self.world.block_generation_queue.put((self, x, y, z))
-
-            elif (x, y, z-1) not in self.blocks:
-                self.world.block_generation_queue.put((self, x, y, z))
-            elif (x, y, z+1) not in self.blocks:
-                self.world.block_generation_queue.put((self, x, y, z))
+        # Check blocks around the current block, if one face is exposed add it to the generation queue
+        surrounding_blocks = [(x+1, y, z), (x-1, y, z), (x, y+1, z), (x, y-1, z), (x, y, z+1), (x, y, z-1)]
+        for surrounding in surrounding_blocks:
+            if edge:
+                if not self.world.find_block(surrounding):
+                    add_to_queue = True
+                    break
+            else:
+                if surrounding not in self.blocks:
+                    add_to_queue = True
+                    break
+        if add_to_queue:
+            self.world.block_generation_queue.put((self, x, y, z))
 
     def create_block(self, coords, block_id, update=True):
         x, y, z = coords[0], coords[1], coords[2]
         if (x, y, z) not in self.blocks:
             # TODO - Need to check if block_id is valid
-            self.blocks[(x, y, z)] = block.Block((x, y, z), block_id, self)
+            self.blocks[(x, y, z)] = block.Block(block_id)
 
             # Used to suppress block update when building the chunk
             if update:
@@ -143,7 +129,7 @@ class Chunk:
 
     def remove_block(self, block_coords):
         if block_coords in self.blocks:
-            self.blocks[block_coords].clear_batch()
+            self.blocks[block_coords].remove_block()
             del self.blocks[block_coords]
             self._update_surrounding_blocks(block_coords[0], block_coords[1], block_coords[2])
 
@@ -157,18 +143,10 @@ class Chunk:
 
     def update_block(self, coord):
         if coord in self.blocks:
-            self.blocks[coord].clear_batch()
             self.create_batch_block(coord[0], coord[1], coord[2])
         else:
             if self.world.find_block(coord):
                 self.world.find_chunk(coord).update_block(coord)
-
-    def _clear_block_batch(self, x, y, z):
-        # Delete batch faces of current block
-        for i in range(6):
-            if (x, y, z, i) in self.batch_positions:
-                self.batch_positions[(x, y, z, i)].delete()
-                del self.batch_positions[(x, y, z, i)]
 
     def _get_block_local_coords(self, coords):
         block_coords = (coords[0], coords[1], coords[2])

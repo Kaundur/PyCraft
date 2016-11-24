@@ -6,9 +6,8 @@ from pyglet.gl import *
 class Textures:
     def __init__(self):
         self.texture_path = 'Images/tex_main.png'
-        self.menu_texture_path = 'Images/GameMenu.png'
-        self.texture_image_size_x = 8
-        self.texture_image_size_y = 8
+        self.texture_pixel_size_x = 8
+        self.texture_pixel_size_y = 8
 
         # Load in textures
         self.texture_main = TextureGroup(pyglet.image.load(self.texture_path).get_texture())
@@ -53,8 +52,8 @@ class Textures:
         return texture_coords
 
     def texture_face_coord(self, x, y):
-        dx = 1.0/self.texture_image_size_x
-        dy = 1.0/self.texture_image_size_x
+        dx = 1.0/self.texture_pixel_size_x
+        dy = 1.0/self.texture_pixel_size_x
 
         x *= dx
         y *= dy
