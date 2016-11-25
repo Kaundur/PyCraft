@@ -3,6 +3,8 @@ from pyglet.gl import *
 
 class Block:
     def __init__(self, block_id):
+        # Block is initialised on creation, graphics is not.
+        # This allows for physics to take place even if the block cannot be seen
         self.block_id = block_id
         self.batch_pos = None
         self.batch_positions = {}
@@ -27,8 +29,13 @@ class Block:
             self.batch_pos = None
 
 
-def highlight_cube(x, y, z, size, extension=0.1):
+def highlight_cube(coords, size, extension=0.1):
     # Extension of cube around normal block size
+
+    x = coords.x
+    y = coords.y
+    z = coords.z
+
     highlight_frame = cube_coordinates(x, y, z, size, extension)
 
     # Make rendering wireframe to draw the highlight cube

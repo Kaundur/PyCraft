@@ -5,7 +5,6 @@ import pyclid
 
 import block
 
-
 CHUNK_SIZE = pyclid.Vec3(16, 16, 16)
 
 

@@ -1,7 +1,8 @@
 from pyglet.window import key
 import pyglet
 import math
-from pyclid import Vec2, Vec3
+
+import pyclid
 
 import math_helper
 import block
@@ -11,7 +12,7 @@ class Player:
     def __init__(self, world, gui):
         self.world = world
         self.player_height = 0.0
-        self.position = Vec3(8, 60, 8)
+        self.position = pyclid.Vec3(8, 60, 8)
 
         self.keys = key.KeyStateHandler()
 
@@ -23,7 +24,7 @@ class Player:
 
         # negative rotation is up
         # -90 up, 90 down
-        self.rotation = Vec2(100, 10)
+        self.rotation = pyclid.Vec2(100, 10)
         self.speed = 1.0
         self.gui = gui
         self.active_item_id = 1
@@ -32,12 +33,13 @@ class Player:
         self.flying = False
         self.on_ground = False
 
-        self.velocity = Vec3()
+        self.velocity = pyclid.Vec3()
 
         # TODO - Should be external of player - Need a physics class
+        # Doesn't need to match the FPS, FPS just shows whats happened with the physical objects
         self.dt = 1.0/30.0
 
-        self.sight_vector = Vec3()
+        self.sight_vector = pyclid.Vec3()
         self.get_sight_vector()
 
         # Coords in real space
@@ -57,8 +59,9 @@ class Player:
 
     def draw_focused_block(self):
         if self.focused_block:
-            x, y, z = self.focused_block[0], self.focused_block[1], self.focused_block[2]
-            block.highlight_cube(x, y, z, 1)
+            # TODO - Temp, to aid with switch to pyclid
+            f_block = pyclid.Vec3(self.focused_block[0], self.focused_block[1], self.focused_block[2])
+            block.highlight_cube(f_block, 1)
 
     def handle_action_bar_keys(self, keys):
         # TODO - Store the keys in an array so they can be updated
@@ -154,21 +157,8 @@ class Player:
             collision = self.world.find_block(body_position)
 
         if not collision:
-            #self.velocity.x = new_x
-            #self.velocity.z = new_z
-            #self.position.x += self.velocity.x
-            #self.position.z += self.velocity.z
-
             self.position.x = new_x
             self.position.z = new_z
-
-            # Check if player has entered a new chunk
-            # If so Generate chunks required, sent correct chunks to render
-
-            self._get_current_chunk()
-
-    def _get_current_chunk(self):
-        pass
 
     def _do_vertical_update(self):
 
@@ -187,4 +177,3 @@ class Player:
         if not self.on_ground:
             # V = u + 0.5 a*t**2
             self.velocity.y += 0.5*self.world.gravity*self.dt**2
-

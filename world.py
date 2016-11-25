@@ -50,9 +50,9 @@ class World:
 
     def _generate_chunk_batches(self, position):
         # Generate the faces of the surface
-        for x in range(self._loaded_position.x-self.render_distance, self._loaded_position.x+self.render_distance):
-            for z in range(self._loaded_position.z-self.render_distance, self._loaded_position.z+self.render_distance):
-                max_y_chunk = self._loaded_position.y + self.render_distance
+        for x in range(self._loaded_position.x-self.generate_distance, self._loaded_position.x+self.generate_distance):
+            for z in range(self._loaded_position.z-self.generate_distance, self._loaded_position.z+self.generate_distance):
+                max_y_chunk = self._loaded_position.y + self.generate_distance
                 for y in range(max_y_chunk):
                     if (x, y, z) in self.chunks:
                         thread.start_new_thread(self.chunks[(x, y, z)].find_exposed_blocks, ())
@@ -83,19 +83,26 @@ class World:
         self.generate_block_faces()
 
         # Now render batches created
-        render_rad = 5
-        for x in range(self._loaded_position.x-render_rad, self._loaded_position.x+render_rad+1):
-            for z in range(self._loaded_position.z-render_rad, self._loaded_position.z+render_rad+1):
-                for y in range(self._loaded_position.y-render_rad, self._loaded_position.y+render_rad+1):
+        for x in range(self._loaded_position.x-self.render_distance, self._loaded_position.x+self.render_distance):
+            for z in range(self._loaded_position.z-self.render_distance, self._loaded_position.z+self.render_distance):
+                for y in range(self._loaded_position.y-self.render_distance, self._loaded_position.y+self.render_distance):
                     if (x, y, z) in self.chunks:
                         self.chunks[(x, y, z)].render()
 
     def generate_block_faces(self):
+        # Throttle the generation of the blocks, so that the game doesn't hang
 
-        # TODO - Can throttle here
-        # TODO - Can use if not self.block_generation_queue.empty()
+        # TODO - This could be more efficient
+        # TODO - Could throttle differently depending on distance to the player
 
-        blocks_per_frame = 500
+        # Do a 3 stage render, based on distance from player. This should reduce the load on the computer
+        # Could we also pass the generate to another thread, Maybe make queue unique to chunks
+        # Could get messy if we need to keep checking the world to see if it needs generating
+        # 1. Generate + render + draw
+        # 2. Generate + render
+        # 3. Generate
+
+        blocks_per_frame = 50
         queue_size = self.block_generation_queue.qsize()
         if queue_size > 0:
             print queue_size
@@ -104,7 +111,6 @@ class World:
                 queue_loop = queue_size
             for i in range(queue_loop):
                 # TODO - if May still be required to check the queue still has values, could use a try and except
-
                 chunk_object, x, y, z = self.block_generation_queue.get()
                 chunk_object.create_exposed_face(x, y, z)
 
