@@ -29,39 +29,47 @@ def get_sight_vector(rotation):
     return pyclid.Vec3(dx, dy, dz)
 
 
+# Step along sight vector until a block collisions occurs,
+# return the block as well as the position connected to the block
 def los_collision(world, position, sight_vector):
-    # TODO - This should accept the sight vector and position, not the player
     if sight_vector:
         sight_position = position
         # step size to increase accuracy of collision
         step_size = 0.1
+        # Max length of the block search, in block units
         max_range = 10
 
+        # Find vector step for sight vector
         step_vector = sight_vector*step_size
 
-        m = 100
+        search_iterations = max_range / step_size
         previous_block = None
-        for _ in xrange(max_range * m):
-            cx = int(math.floor(sight_position.x/16))
-            cy = int(math.floor(sight_position.y/16))
-            cz = int(math.floor(sight_position.z/16))
+        for _ in xrange(search_iterations):
+            # Calculate what chunk the sight vector is inside
+            cx = math.floor(sight_position.x/16)
+            cy = math.floor(sight_position.y/16)
+            cz = math.floor(sight_position.z/16)
 
-            block_key = (int(math.floor(sight_position.x)),
-                           int(math.floor(sight_position.y)+1)-1,
-                           int(math.floor(sight_position.z)))
-            try:
+            # Calculate what block coord the sight vector is inside
+            block_key = (math.floor(sight_position.x),
+                         math.floor(sight_position.y),
+                         math.floor(sight_position.z))
+
+            # Does the chunk exist
+            if (cx, cy, cz) in world.chunks:
                 chunk = world.chunks[cx, cy, cz]
+                # Check that the sight vector has moved to a new block, and the block exists
                 if block_key != previous_block and block_key in chunk.blocks and chunk.blocks[block_key] is not None:
-                    return previous_block, (int(math.floor(sight_position.x)),
-                                            int(math.floor(sight_position.y)),
-                                            int(math.floor(sight_position.z)))
+                    # Return the previous block position and the position of the block collided with the sight vector
+                    return previous_block, (math.floor(sight_position.x),
+                                            math.floor(sight_position.y),
+                                            math.floor(sight_position.z))
 
-                previous_block = (int(math.floor(sight_position.x)),
-                                            int(math.floor(sight_position.y)),
-                                            int(math.floor(sight_position.z)))
+                # If a collision hasn't occurred, Set the previous block position as the current position
+                previous_block = (math.floor(sight_position.x),
+                                  math.floor(sight_position.y),
+                                  math.floor(sight_position.z))
                 sight_position += step_vector
-            except:
-                # TODO - Add error here
-                pass
 
+        # Return None values when no blocks are found within the maximum range
         return None, None
