@@ -1,8 +1,6 @@
 import pyglet
 from pyglet.gl import *
 
-import pyclid
-
 import block
 
 CHUNK_SIZE = (16, 16, 16)
@@ -14,7 +12,7 @@ class Chunk:
         self.blocks_new = {}
         self.batch_positions = {}
         self.update_list = []
-        self.position = pyclid.Vec3(x, y, z)
+        self.position = [x, y, z]
 
         self.batch_generated = False
 
@@ -27,11 +25,11 @@ class Chunk:
         for x in xrange(CHUNK_SIZE[0]):
             for z in xrange(CHUNK_SIZE[2]):
                 for y in xrange(CHUNK_SIZE[1]):
-                    real_x = x+self.position.x*16
-                    real_y = y+self.position.y*16
-                    real_z = z+self.position.z*16
+                    real_x = x+self.position[0]*16
+                    real_y = y+self.position[1]*16
+                    real_z = z+self.position[2]*16
                     surface_point = self.world.get_surface(real_x, real_z)
-                    if (self.position.y*16 + y) <= surface_point:
+                    if (self.position[1]*16 + y) <= surface_point:
                         # Select block id based on distance to surface block
                         block_id = 1
                         if real_y <= surface_point-5:
@@ -47,9 +45,9 @@ class Chunk:
                 y = block_position[1]
                 z = block_position[2]
 
-                local_x = x-self.position.x*16
-                local_y = y-self.position.y*16
-                local_z = z-self.position.z*16
+                local_x = x-self.position[0]*16
+                local_y = y-self.position[1]*16
+                local_z = z-self.position[2]*16
 
                 # Look at edge cases
                 if local_x == 15 or local_x == 0 or local_y == 15 or local_y == 0 or local_z == 15 or local_z == 0:
@@ -157,10 +155,9 @@ class Chunk:
     def render(self):
         self.batch.draw()
 
-
+# TODO - This is held in the world class as well
 def get_chunk_coords(position):
     chunk_x = int(position[0] / CHUNK_SIZE[0])
     chunk_y = int(position[1] / CHUNK_SIZE[1])
     chunk_z = int(position[2] / CHUNK_SIZE[2])
     return [chunk_x, chunk_y, chunk_z]
-    # return pyclid.Vec3(chunk_x, chunk_y, chunk_z)
