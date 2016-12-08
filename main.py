@@ -8,11 +8,7 @@ import world
 import player
 import textures
 
-import pyclid
-
-
 FRAMES_PER_SECOND = 30
-
 
 class Game(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
