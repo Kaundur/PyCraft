@@ -3,7 +3,6 @@ import Queue
 import thread
 
 from noise import pnoise2, snoise2, pnoise3, snoise3
-from pyclid import Vec3
 
 import chunk
 
@@ -136,18 +135,21 @@ class World:
         return block_found
 
     def find_chunk_coords(self, coords):
-        # TODO - This exists in two locations
-        return Vec3(int(math.floor(coords[0]/16)), int(math.floor(coords[1]/16)), int(math.floor(coords[2]/16)))
+        # This returns the chunk coords corresponding to the world coords
+        return (int(math.floor(coords[0] / 16)), int(math.floor(coords[1] / 16)), int(math.floor(coords[2] / 16)))
 
     def find_chunk(self, coords):
-        # Takes in real coords of block, returns the chunk that the block exists in
-        chunk_coords = (int(math.floor(coords[0]/16)), int(math.floor(coords[1]/16)), int(math.floor(coords[2]/16)))
+        # This returns the chunk object at world coords
+        chunk_coords = self.find_chunk_coords(coords)
         if chunk_coords in self.chunks:
             return self.chunks[chunk_coords]
         return None
 
     def update_position(self, coords):
-        if self.find_chunk_coords(coords) != self.current_centered_chunk:
-            self.current_centered_chunk = self.find_chunk_coords(coords)
+        # This is updated by the player when they move,
+        # Its used to signal the world to render and generate different locations around the player
+        current_chunk = self.find_chunk(coords)
+        if current_chunk != self.current_centered_chunk:
+            self.current_centered_chunk = current_chunk
             self.generate_world(coords)
 
