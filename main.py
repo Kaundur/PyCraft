@@ -20,7 +20,7 @@ class Game(pyglet.window.Window):
         super(Game, self).__init__(*args, **kwargs)
 
         # Will need updating if the screen size changes
-        self.cursor_coordinates = pyclid.Vec2(int(self.width/2.0), int(self.height/2.0))
+        self.cursor_coordinates = [int(self.width/2.0), int(self.height/2.0)]
 
         self.tick_counter = 0
 

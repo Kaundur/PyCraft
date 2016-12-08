@@ -63,12 +63,12 @@ class Renderer:
 
 
 def draw_crosshair(coords):
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x, coords.y]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords[0], coords[1]]))
 
     # Draw extra points around centre
     c_width = 10
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x,         coords.y-c_width]))
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x,         coords.y+c_width]))
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x-c_width, coords.y]))
-    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords.x+c_width, coords.y]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords[0],         coords[1]-c_width]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords[0],         coords[1]+c_width]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords[0]-c_width, coords[1]]))
+    pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords[0]+c_width, coords[1]]))
 
