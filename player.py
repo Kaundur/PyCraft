@@ -102,11 +102,7 @@ class Player:
         if button == pyglet.window.mouse.LEFT:
             if self.focused_block:
                 self.world.remove_block(self.focused_block)
-                # TODO - Using a tuple here, need to update other functions to accept pyclid
-                # All world generation needs to be updated to accept it
-                # TODO - I dont think pyclid is the correct way to go, will we be able to hash it for the chunk key?
-                # I think itll work well for the player, but not for the blocks
-                #self.world.remove_block((self.focused_block.x, self.focused_block.y, self.focused_block.z))
+
         # Create block
         if button == pyglet.window.mouse.RIGHT:
             if self.connecting_block:
