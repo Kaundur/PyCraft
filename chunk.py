@@ -5,7 +5,7 @@ import pyclid
 
 import block
 
-CHUNK_SIZE = pyclid.Vec3(16, 16, 16)
+CHUNK_SIZE = (16, 16, 16)
 
 
 class Chunk:
@@ -24,9 +24,9 @@ class Chunk:
         self.world = world
 
     def generate_chunk_default(self):
-        for x in xrange(CHUNK_SIZE.x):
-            for z in xrange(CHUNK_SIZE.z):
-                for y in xrange(CHUNK_SIZE.y):
+        for x in xrange(CHUNK_SIZE[0]):
+            for z in xrange(CHUNK_SIZE[2]):
+                for y in xrange(CHUNK_SIZE[1]):
                     real_x = x+self.position.x*16
                     real_y = y+self.position.y*16
                     real_z = z+self.position.z*16
@@ -159,7 +159,8 @@ class Chunk:
 
 
 def get_chunk_coords(position):
-    chunk_x = int(position.x / CHUNK_SIZE.x)
-    chunk_y = int(position.y / CHUNK_SIZE.y)
-    chunk_z = int(position.z / CHUNK_SIZE.z)
-    return pyclid.Vec3(chunk_x, chunk_y, chunk_z)
+    chunk_x = int(position[0] / CHUNK_SIZE[0])
+    chunk_y = int(position[1] / CHUNK_SIZE[1])
+    chunk_z = int(position[2] / CHUNK_SIZE[2])
+    return [chunk_x, chunk_y, chunk_z]
+    # return pyclid.Vec3(chunk_x, chunk_y, chunk_z)

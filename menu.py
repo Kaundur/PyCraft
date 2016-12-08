@@ -1,8 +1,8 @@
 import pyglet
 from pyglet.gl import *
 
-import block
 
+import block
 
 # TODO - Rename menu.py to GUI, and GUIController?
 class MenuController:
@@ -16,6 +16,7 @@ class MenuController:
 
     def update_active_item(self, active_item):
         self.action_bar.update_active_item(active_item)
+
 
 # TODO - Have class for each action bar item
 class ActionBar:
@@ -47,7 +48,7 @@ class ActionBar:
     def initialise_action_bar_items(self):
         self.action_bar_items = []
         # Base voxel for the action bar
-        voxel = block.cube_coordinates(0, 0, 0, 1.0)
+        voxel = block.cube_coordinates((0, 0, 0), 1.0)
         for i in range(5):
             v_texture = self.game_textures.get_texture_full(i)
             self.action_bar_items.append(pyglet.graphics.Batch())

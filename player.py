@@ -2,8 +2,6 @@ from pyglet.window import key
 import pyglet
 import math
 
-import pyclid
-
 import math_helper
 import block
 
@@ -12,7 +10,7 @@ class Player:
     def __init__(self, world, gui):
         self.world = world
         self.player_height = 0.0
-        self.position = pyclid.Vec3(8, 60, 8)
+        self.position = [8, 60, 8]
 
         self.keys = key.KeyStateHandler()
 
@@ -27,7 +25,8 @@ class Player:
 
         # negative rotation is up
         # -90 up, 90 down
-        self.rotation = pyclid.Vec2(100, 10)
+        self.rotation = [100, 10]
+
         self.rotation_speed = 0.1
 
         self.max_rotation_up = -90
@@ -39,12 +38,12 @@ class Player:
 
         self.on_ground = False
 
-        self.velocity = pyclid.Vec3()
+        self.velocity = [0, 0, 0]
 
         # Should be independent of FPS
         self.dt = 1.0/30.0
 
-        self.sight_vector = pyclid.Vec3()
+        self.sight_vector = None
         self.get_sight_vector()
 
         # Coords in real space
@@ -64,9 +63,7 @@ class Player:
 
     def draw_focused_block(self):
         if self.focused_block:
-            # TODO - Temp, to aid with switch to pyclid
-            f_block = pyclid.Vec3(self.focused_block[0], self.focused_block[1], self.focused_block[2])
-            block.highlight_cube(f_block, 1)
+            block.highlight_cube(self.focused_block, 1)
 
     def handle_action_bar_keys(self, keys):
         # TODO - Store the keys in an array so they can be updated
@@ -88,23 +85,28 @@ class Player:
 
         if self.on_ground:
             if keys[key.SPACE]:
-                self.velocity.y = 0.1
+                self.velocity[1] = 0.1
 
         self.world.update_position(self.position)
 
     def on_mouse_motion(self, x, y, dx, dy):
-        self.rotation.x += dx*self.rotation_speed
-        self.rotation.y -= dy*self.rotation_speed
+        self.rotation[0] += dx*self.rotation_speed
+        self.rotation[1] -= dy*self.rotation_speed
 
         # Clip the rotation so that the camera doesn't go beyond the players natural movement,
         # 0deg is forward, up is negative, down is positive
-        self.rotation.y = math_helper.clip(self.rotation.y, self.max_rotation_up, self.max_rotation_down)
+        self.rotation[1] = math_helper.clip(self.rotation[1], self.max_rotation_up, self.max_rotation_down)
 
     def on_mouse_press(self, x, y, button, modifier):
         # Destroy block
         if button == pyglet.window.mouse.LEFT:
             if self.focused_block:
                 self.world.remove_block(self.focused_block)
+                # TODO - Using a tuple here, need to update other functions to accept pyclid
+                # All world generation needs to be updated to accept it
+                # TODO - I dont think pyclid is the correct way to go, will we be able to hash it for the chunk key?
+                # I think itll work well for the player, but not for the blocks
+                #self.world.remove_block((self.focused_block.x, self.focused_block.y, self.focused_block.z))
         # Create block
         if button == pyglet.window.mouse.RIGHT:
             if self.connecting_block:
@@ -113,60 +115,66 @@ class Player:
     def move(self, keys):
         # TODO - Can we combine some functions here, so that all the velocity is handled together
         # Get directional components
-        x_move = math.sin(math.radians(self.rotation.x))
+        x_move = math.sin(math.radians(self.rotation[0]))
         # Do I need to calculate this, they'll be 90deg out of phase
-        z_move = math.cos(math.radians(self.rotation.x))
+        z_move = math.cos(math.radians(self.rotation[0]))
 
-        updated_velocity = pyclid.Vec3(self.velocity.x*self.drag, 0, self.velocity.z*self.drag)
+        updated_velocity_x = self.velocity[0]*self.drag
+        updated_velocity_z = self.velocity[2]*self.drag
 
         if keys[key.W]:
-            updated_velocity.x += x_move
-            updated_velocity.z -= z_move
+            updated_velocity_x += x_move
+            updated_velocity_z -= z_move
         elif keys[key.S]:
-            updated_velocity.x -= x_move
-            updated_velocity.z += z_move
+            updated_velocity_x -= x_move
+            updated_velocity_z += z_move
         elif keys[key.A]:
-            updated_velocity.x -= z_move
-            updated_velocity.z -= x_move
+            updated_velocity_x -= z_move
+            updated_velocity_z -= x_move
         elif keys[key.D]:
-            updated_velocity.x += z_move
-            updated_velocity.z += x_move
+            updated_velocity_x += z_move
+            updated_velocity_z += x_move
 
-        self.velocity.x = updated_velocity.x
-        self.velocity.z = updated_velocity.z
+        self.velocity[0] = updated_velocity_x
+        self.velocity[2] = updated_velocity_z
 
-        # Clip maximum velocity
-        self.velocity.x = math_helper.clip(self.velocity.x, -self.max_velocity, self.max_velocity)
-        self.velocity.z = math_helper.clip(self.velocity.z, -self.max_velocity, self.max_velocity)
+        # Find the maximum velocity for each component
+        velocity_mag = math.sqrt(self.velocity[0]*self.velocity[0] + self.velocity[2]*self.velocity[2])
+        # Cap velocity to the maximum velocity
+        if velocity_mag > self.max_velocity:
+            self.velocity[0] /= velocity_mag
+            self.velocity[2] /= velocity_mag
+            self.velocity[0] *= self.max_velocity
+            self.velocity[2] *= self.max_velocity
 
     def update_player(self):
         # Block is 1 high. Is block also 1 down? accounts for 2.0
-        feet_position = (int(self.position.x), int(self.position.y-2.0), int(self.position.z))
+        feet_position = (int(self.position[0]), int(self.position[1]-2.0), int(self.position[2]))
 
         on_ground = self.world.find_block(feet_position)
         if on_ground and not self.on_ground:
             self.on_ground = True
-            self.velocity.y = 0.0
+            self.velocity[1] = 0.0
 
         if not on_ground:
             self.on_ground = False
 
-        self.position.y += self.velocity.y
+        self.position[1] += self.velocity[1]
         if not self.on_ground:
             # V = u + 0.5 a*t**2
-            self.velocity.y += 0.5*self.world.gravity*self.dt**2
+            self.velocity[1] += 0.5*self.world.gravity*self.dt**2
 
     def _do_collision(self):
-        new_x = self.position.x + self.velocity.x
-        new_z = self.position.z + self.velocity.z
+        new_x = self.position[0] + self.velocity[0]
+        new_z = self.position[2] + self.velocity[2]
 
-        feet_position = (int(new_x), int(self.position.y-1.0), int(new_z))
-        body_position = (int(new_x), int(self.position.y), int(new_z))
+        feet_position = (int(new_x), int(self.position[1]-1.0), int(new_z))
+        body_position = (int(new_x), int(self.position[1]), int(new_z))
         collision = self.world.find_block(feet_position)
         # Check both bocks around the player
         if not collision:
             collision = self.world.find_block(body_position)
 
         if not collision:
-            self.position.x = new_x
-            self.position.z = new_z
+            self.position[0] = new_x
+            self.position[2] = new_z

@@ -20,7 +20,7 @@ class World:
         # Not really a seed, the position of the noise in the 3D dimension
         self.seed = 0
         self.block_generation_queue = Queue.Queue()
-        self._loaded_position = Vec3()
+        self._loaded_position = None
 
         # Chunks around the player to generate
         self.generate_distance = 2
@@ -36,12 +36,12 @@ class World:
         # Store the position, so that we have a reference point to generate and render the chunks around
         self._loaded_position = chunk.get_chunk_coords(position)
 
-        for x in range(self._loaded_position.x-self.generate_distance, self._loaded_position.x + self.generate_distance):
-            for z in range(self._loaded_position.z-self.generate_distance, self._loaded_position.z +self.generate_distance):
+        for x in range(self._loaded_position[0]-self.generate_distance, self._loaded_position[0] + self.generate_distance):
+            for z in range(self._loaded_position[2]-self.generate_distance, self._loaded_position[2] +self.generate_distance):
                 if (x, 0, z) not in self.chunks:
                     self.generate_surface(x, z)
                     # TODO - What is this doing?
-                    max_y_chunk = self._loaded_position.y + self.generate_distance
+                    max_y_chunk = self._loaded_position[1] + self.generate_distance
                     for y in range(max_y_chunk):
                         if (x, y, z) not in self.chunks:
                             self.generate_new_chunk(x, y, z)
@@ -50,9 +50,9 @@ class World:
 
     def _generate_chunk_batches(self, position):
         # Generate the faces of the surface
-        for x in range(self._loaded_position.x-self.generate_distance, self._loaded_position.x+self.generate_distance):
-            for z in range(self._loaded_position.z-self.generate_distance, self._loaded_position.z+self.generate_distance):
-                max_y_chunk = self._loaded_position.y + self.generate_distance
+        for x in range(self._loaded_position[0]-self.generate_distance, self._loaded_position[0]+self.generate_distance):
+            for z in range(self._loaded_position[2]-self.generate_distance, self._loaded_position[2]+self.generate_distance):
+                max_y_chunk = self._loaded_position[1] + self.generate_distance
                 for y in range(max_y_chunk):
                     if (x, y, z) in self.chunks:
                         thread.start_new_thread(self.chunks[(x, y, z)].find_exposed_blocks, ())
@@ -83,9 +83,9 @@ class World:
         self.generate_block_faces()
 
         # Now render batches created
-        for x in range(self._loaded_position.x-self.render_distance, self._loaded_position.x+self.render_distance):
-            for z in range(self._loaded_position.z-self.render_distance, self._loaded_position.z+self.render_distance):
-                for y in range(self._loaded_position.y-self.render_distance, self._loaded_position.y+self.render_distance):
+        for x in range(self._loaded_position[0]-self.render_distance, self._loaded_position[0]+self.render_distance):
+            for z in range(self._loaded_position[2]-self.render_distance, self._loaded_position[2]+self.render_distance):
+                for y in range(self._loaded_position[1]-self.render_distance, self._loaded_position[1]+self.render_distance):
                     if (x, y, z) in self.chunks:
                         self.chunks[(x, y, z)].render()
 
@@ -125,7 +125,7 @@ class World:
         if chunk_coords in self.chunks:
             chunk = self.chunks[chunk_coords]
             # Find block coordinates local to chunk
-            block_coords = (coords[0], coords[1], coords[2])
+            block_coords = coords
             chunk.create_block(block_coords, block_id)
 
     def find_block(self, coords):
@@ -136,7 +136,8 @@ class World:
         return block_found
 
     def find_chunk_coords(self, coords):
-        return Vec3(int(math.floor(coords.x/16)), int(math.floor(coords.y/16)), int(math.floor(coords.z/16)))
+        # TODO - This exists in two locations
+        return Vec3(int(math.floor(coords[0]/16)), int(math.floor(coords[1]/16)), int(math.floor(coords[2]/16)))
 
     def find_chunk(self, coords):
         # Takes in real coords of block, returns the chunk that the block exists in

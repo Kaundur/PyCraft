@@ -32,11 +32,8 @@ class Block:
 def highlight_cube(coords, size, extension=0.1):
     # Extension of cube around normal block size
 
-    x = coords.x
-    y = coords.y
-    z = coords.z
-
-    highlight_frame = cube_coordinates(x, y, z, size, extension)
+  
+    highlight_frame = cube_coordinates(coords, size, extension)
 
     # Make rendering wireframe to draw the highlight cube
     # Is this really faster than glLines?
@@ -45,9 +42,13 @@ def highlight_cube(coords, size, extension=0.1):
     pyglet.gl.glPolygonMode(pyglet.gl.GL_FRONT_AND_BACK, pyglet.gl.GL_FILL)
 
 
-def cube_coordinates(x, y, z, s=1, e=0):
+def cube_coordinates(coords, s=1, e=0):
     # s - size
     # e - extension
+
+    x = coords[0]
+    y = coords[1]
+    z = coords[2]
     s += e
 
     # Return all vertices of block, groups of 3 coords

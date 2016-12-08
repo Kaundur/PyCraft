@@ -20,10 +20,7 @@ class Game(pyglet.window.Window):
         super(Game, self).__init__(*args, **kwargs)
 
         # Will need updating if the screen size changes
-        self.cursor_coords = pyclid.Vec2(self.width/2.0, self.height/2.0)
-        # TODO - this should be built in to pyclid
-        self.cursor_coords.x = int(self.cursor_coords.x)
-        self.cursor_coords.y = int(self.cursor_coords.y)
+        self.cursor_coordinates = pyclid.Vec2(int(self.width/2.0), int(self.height/2.0))
 
         self.tick_counter = 0
 
@@ -68,12 +65,12 @@ class Game(pyglet.window.Window):
 
         self.render.on_draw()
 
-        glRotatef(self.player.rotation.y, 1.0, 0.0, 0.0)
-        glRotatef(self.player.rotation.x, 0.0, 1.0, 0.0)
+        glRotatef(self.player.rotation[1], 1.0, 0.0, 0.0)
+        glRotatef(self.player.rotation[0], 0.0, 1.0, 0.0)
 
-        glTranslatef(-self.player.position.x,
-                     -self.player.position.y+self.player.player_height,
-                     -self.player.position.z)
+        glTranslatef(-self.player.position[0],
+                     -self.player.position[1]+self.player.player_height,
+                     -self.player.position[2])
 
         self.world.render()
 
@@ -85,7 +82,7 @@ class Game(pyglet.window.Window):
         self.render.set_2d()
 
         # TODO - Should package crosshair, actionbar together into gui class
-        renderer.draw_crosshair(self.cursor_coords)
+        renderer.draw_crosshair(self.cursor_coordinates)
 
     @staticmethod
     def exit_game():
