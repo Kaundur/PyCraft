@@ -1,8 +1,4 @@
 import math
-from pyglet.gl import *
-import ctypes
-
-import pyclid
 
 
 # Bound a value to a min/max value
