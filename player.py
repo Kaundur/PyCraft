@@ -19,6 +19,7 @@ class Player:
                                 key._3,
                                 key._4,
                                 key._5]
+        self.num_action_bar_items = len(self.action_bar_keys)
 
         self.drag = 0.7
         self.max_velocity = 0.3
@@ -66,17 +67,10 @@ class Player:
             block.highlight_cube(self.focused_block, 1)
 
     def handle_action_bar_keys(self, keys):
-        # TODO - Store the keys in an array so they can be updated
-        if keys[self.action_bar_keys[0]]:
-            self.update_active_item(1)
-        elif keys[self.action_bar_keys[1]]:
-            self.update_active_item(2)
-        elif keys[self.action_bar_keys[2]]:
-            self.update_active_item(3)
-        elif keys[self.action_bar_keys[3]]:
-            self.update_active_item(4)
-        elif keys[self.action_bar_keys[4]]:
-            self.update_active_item(5)
+        for i in range(self.num_action_bar_items):
+            if keys[self.action_bar_keys[i]]:
+                # TODO - Would be nice if item started at zero
+                self.update_active_item(i+1)
 
     def handle_keys(self, keys):
         self.handle_action_bar_keys(keys)

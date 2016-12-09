@@ -25,11 +25,11 @@ class Chunk:
         for x in xrange(CHUNK_SIZE[0]):
             for z in xrange(CHUNK_SIZE[2]):
                 for y in xrange(CHUNK_SIZE[1]):
-                    real_x = x+self.position[0]*16
-                    real_y = y+self.position[1]*16
-                    real_z = z+self.position[2]*16
+                    real_x = x+self.position[0]*CHUNK_SIZE[0]
+                    real_y = y+self.position[1]*CHUNK_SIZE[1]
+                    real_z = z+self.position[2]*CHUNK_SIZE[2]
                     surface_point = self.world.get_surface(real_x, real_z)
-                    if (self.position[1]*16 + y) <= surface_point:
+                    if (self.position[1]*CHUNK_SIZE[1] + y) <= surface_point:
                         # Select block id based on distance to surface block
                         block_id = 1
                         if real_y <= surface_point-5:
@@ -44,17 +44,20 @@ class Chunk:
                 x = block_position[0]
                 y = block_position[1]
                 z = block_position[2]
-
-                local_x = x-self.position[0]*16
-                local_y = y-self.position[1]*16
-                local_z = z-self.position[2]*16
-
-                # Look at edge cases
-                if local_x == 15 or local_x == 0 or local_y == 15 or local_y == 0 or local_z == 15 or local_z == 0:
-                    self.check_exposed_face(x, y, z, True)
-                else:
-                    self.check_exposed_face(x, y, z)
+                # If the block has any exposed faces, add them to the render queue
+                if self.check_exposed_face(x, y, z):
+                    self.world.block_generation_queue.put((self, x, y, z))
             self.batch_generated = True
+
+    def check_exposed_face(self, x, y, z):
+        # Check blocks around the current block, if one face is exposed add it to the generation queue
+        # Note - This will always create a hard boundary at each chunk edge, could be optimised
+        surrounding_blocks = [(x + 1, y, z), (x - 1, y, z), (x, y + 1, z), (x, y - 1, z), (x, y, z + 1),
+                              (x, y, z - 1)]
+        for surrounding in surrounding_blocks:
+            if surrounding not in self.blocks:
+                return True
+        return False
 
     # TODO - Would be quicker on generation to add all faces to an array
     # TODO - and move all to a batch at the end of genreation
@@ -63,6 +66,7 @@ class Chunk:
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
         faces = []
         # TODO - Using world.find_block will be slower than checking if the block is an edge case
+
         if not self.world.find_block((x, y+1, z)):
             faces.append(0)
         # Don't render bottom of world y != 0
@@ -80,24 +84,6 @@ class Chunk:
 
         if faces:
             self.blocks[(x, y, z)].add_faces(x, y, z, faces, self.batch, self.textures.texture_main, texture_coords)
-
-    def check_exposed_face(self, x, y, z, edge=False):
-        # Handle the edges of the chunk, difficult to check since new chunk may not exist yet
-        add_to_queue = False
-
-        # Check blocks around the current block, if one face is exposed add it to the generation queue
-        surrounding_blocks = [(x+1, y, z), (x-1, y, z), (x, y+1, z), (x, y-1, z), (x, y, z+1), (x, y, z-1)]
-        for surrounding in surrounding_blocks:
-            if edge:
-                if not self.world.find_block(surrounding):
-                    add_to_queue = True
-                    break
-            else:
-                if surrounding not in self.blocks:
-                    add_to_queue = True
-                    break
-        if add_to_queue:
-            self.world.block_generation_queue.put((self, x, y, z))
 
     def create_block(self, coords, block_id, update=True):
         x, y, z = coords[0], coords[1], coords[2]
@@ -119,8 +105,7 @@ class Chunk:
         self.create_exposed_face(x, y, z)
 
     def find_block(self, block_coords):
-        local_coords = self._get_block_local_coords(block_coords)
-        if local_coords in self.blocks:
+        if block_coords in self.blocks:
             return True
         return False
 
@@ -145,19 +130,15 @@ class Chunk:
             if self.world.find_block(coord):
                 self.world.find_chunk(coord).update_block(coord)
 
-    def _get_block_local_coords(self, coords):
-        block_coords = (coords[0], coords[1], coords[2])
-        return block_coords
-
     def add_to_update_list(self, position, block_object):
         self.update_list.append((position, block_object))
 
     def render(self):
         self.batch.draw()
 
-# TODO - This is held in the world class as well
-def get_chunk_coords(position):
+
+def find_chunk_coords(position):
     chunk_x = int(position[0] / CHUNK_SIZE[0])
     chunk_y = int(position[1] / CHUNK_SIZE[1])
     chunk_z = int(position[2] / CHUNK_SIZE[2])
-    return [chunk_x, chunk_y, chunk_z]
+    return chunk_x, chunk_y, chunk_z

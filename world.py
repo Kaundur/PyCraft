@@ -2,7 +2,8 @@ import math
 import Queue
 import thread
 
-from noise import pnoise2, snoise2, pnoise3, snoise3
+
+import noise
 
 import chunk
 
@@ -22,7 +23,7 @@ class World:
         self._loaded_position = None
 
         # Chunks around the player to generate
-        self.generate_distance = 2
+        self.generate_distance = 1
         self.render_distance = 1
         self.chunks = {}
         self.surface = {}
@@ -33,7 +34,7 @@ class World:
         # Get chunk coordinates (player coordinates divided by chunk size and floored)
         # 5, 20, 40 >>> 5//16, 20//16, 40//16 >>> 0, 1, 2
         # Store the position, so that we have a reference point to generate and render the chunks around
-        self._loaded_position = chunk.get_chunk_coords(position)
+        self._loaded_position = chunk.find_chunk_coords(position)
 
         for x in range(self._loaded_position[0]-self.generate_distance, self._loaded_position[0] + self.generate_distance):
             for z in range(self._loaded_position[2]-self.generate_distance, self._loaded_position[2] +self.generate_distance):
@@ -67,7 +68,7 @@ class World:
 
             for x in xrange(real_pos_x, real_pos_x + 16):
                 for z in xrange(real_pos_z, real_pos_z + 16):
-                    point = int((snoise3(x / freq, z / freq, self.seed, octaves) * 127.0 + 128.0)/scale)
+                    point = int((noise.snoise3(x / freq, z / freq, self.seed, octaves) * 127.0 + 128.0)/scale)
                     self.surface[(x, z)] = point
 
     def get_surface(self, x, z):
@@ -101,10 +102,9 @@ class World:
         # 2. Generate + render
         # 3. Generate
 
-        blocks_per_frame = 50
+        blocks_per_frame = 200
         queue_size = self.block_generation_queue.qsize()
         if queue_size > 0:
-            print queue_size
             queue_loop = blocks_per_frame
             if queue_size < blocks_per_frame:
                 queue_loop = queue_size
@@ -134,13 +134,9 @@ class World:
             block_found = block_chunk.find_block(coords)
         return block_found
 
-    def find_chunk_coords(self, coords):
-        # This returns the chunk coords corresponding to the world coords
-        return (int(math.floor(coords[0] / 16)), int(math.floor(coords[1] / 16)), int(math.floor(coords[2] / 16)))
-
     def find_chunk(self, coords):
         # This returns the chunk object at world coords
-        chunk_coords = self.find_chunk_coords(coords)
+        chunk_coords = chunk.find_chunk_coords(coords)
         if chunk_coords in self.chunks:
             return self.chunks[chunk_coords]
         return None

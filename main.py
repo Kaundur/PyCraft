@@ -5,10 +5,12 @@ from pyglet.window import key
 import renderer
 import menu
 import world
+import chunk
 import player
 import textures
 
 FRAMES_PER_SECOND = 30
+
 
 class Game(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
@@ -32,7 +34,7 @@ class Game(pyglet.window.Window):
 
         self.player = player.Player(self.world, self.game_menu)
 
-        self.world.current_centered_chunk = self.world.find_chunk_coords(self.player.position)
+        self.world.current_centered_chunk = chunk.find_chunk_coords(self.player.position)
         self.world.generate_world(self.player.position)
 
         self.keys = key.KeyStateHandler()

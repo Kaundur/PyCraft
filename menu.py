@@ -4,6 +4,7 @@ from pyglet.gl import *
 
 import block
 
+
 # TODO - Rename menu.py to GUI, and GUIController?
 class MenuController:
     def __init__(self, game_textures, main):

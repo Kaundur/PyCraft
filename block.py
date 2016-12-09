@@ -6,37 +6,35 @@ class Block:
         # Block is initialised on creation, graphics is not.
         # This allows for physics to take place even if the block cannot be seen
         self.block_id = block_id
-        self.batch_pos = None
-        self.batch_positions = {}
+        self._batch_pos = None
 
     def add_faces(self, x, y, z, faces, batch, texture, texture_coords):
         # If the batch already exists, we are trying to add new faces to the batch.
         # First remove the previous batch and regenerate
-        if self.batch_pos:
+        if self._batch_pos:
             self.remove_block()
         # Render entire block in one pass, if a new face is added, just rerender the entire block
         # Quicker chunk generation
         batch_pos = render_faces(x, y, z, faces, batch, texture, texture_coords)
         if batch_pos:
-            self.batch_pos = batch_pos
+            self._batch_pos = batch_pos
 
     def remove_block(self):
         self.clear_batch()
 
     def clear_batch(self):
-        if self.batch_pos:
-            self.batch_pos.delete()
-            self.batch_pos = None
+        if self._batch_pos:
+            self._batch_pos.delete()
+            self._batch_pos = None
 
 
+# Draw a wireframe cube, used as a visual aid to show the player what block they are looking at
 def highlight_cube(coords, size, extension=0.1):
     # Extension of cube around normal block size
-
   
     highlight_frame = cube_coordinates(coords, size, extension)
 
-    # Make rendering wireframe to draw the highlight cube
-    # Is this really faster than glLines?
+    # render wireframe cube
     pyglet.gl.glPolygonMode(pyglet.gl.GL_FRONT_AND_BACK, pyglet.gl.GL_LINE)
     pyglet.graphics.draw(24, pyglet.gl.GL_QUADS, ('v3f', highlight_frame), ('c3b', [0, 0, 100]*24))
     pyglet.gl.glPolygonMode(pyglet.gl.GL_FRONT_AND_BACK, pyglet.gl.GL_FILL)
@@ -70,6 +68,7 @@ def render_faces(x, y, z, faces, batch, texture_group, texture_coords):
     e = 0
     s += e
 
+    # Build list of coordinates and textures for the faces passed in
     face_final = []
     texture_final = []
     for face in faces:
@@ -92,9 +91,8 @@ def render_faces(x, y, z, faces, batch, texture_group, texture_coords):
             texture_final.extend(texture_coords[face])
             face_final.extend(face_out)
 
-    # Does this account for an empty array?
-    # TODO - Can we just extend the batch here? test for later use with update to faces
-    # TODO - See how Vertex list works, maybe there's an extend function
+    # if we have built a list of faces to render, all all to the batch
+    # return a reference to the position in the batch so that it can easily be deleted
     if face_final:
         batch_pos = batch.add(int(len(face_final)/3), pyglet.gl.GL_QUADS, texture_group, ('v3f', face_final), ('t2f', texture_final))
         return batch_pos
