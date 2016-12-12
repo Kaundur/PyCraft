@@ -23,7 +23,7 @@ class World:
 
         # Chunks around the player to generate
         self.render_distance = 1
-        self.generate_distance = 1
+        self.generate_distance = self.render_distance+1
 
         self.chunks = {}
         self.surface = {}
