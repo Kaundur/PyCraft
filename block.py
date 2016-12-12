@@ -51,13 +51,11 @@ def cube_coordinates(coords, s=1, e=0):
 
     # Return all vertices of block, groups of 3 coords
     coordinates = [x-e, y+s, z-e,  x-e, y+s, z+s,  x+s, y+s, z+s,  x+s, y+s, z-e,
-                      x-e, y-e, z-e,  x+s, y-e, z-e,  x+s, y-e, z+s,  x-e, y-e, z+s,
-
-                      x+s, y+s, z-e,  x+s, y+s, z+s,  x+s, y-e, z+s,  x+s, y-e, z-e,
-                      x-e, y+s, z+s,  x-e, y+s, z-e,  x-e, y-e, z-e,  x-e, y-e, z+s,
-
-                      x-e, y+s, z-e,  x+s, y+s, z-e,  x+s, y-e, z-e,  x-e, y-e, z-e,
-                      x+s, y+s, z+s,  x-e, y+s, z+s,  x-e, y-e, z+s,  x+s, y-e, z+s]
+                   x-e, y-e, z-e,  x+s, y-e, z-e,  x+s, y-e, z+s,  x-e, y-e, z+s,
+                   x+s, y+s, z-e,  x+s, y+s, z+s,  x+s, y-e, z+s,  x+s, y-e, z-e,
+                   x-e, y+s, z+s,  x-e, y+s, z-e,  x-e, y-e, z-e,  x-e, y-e, z+s,
+                   x-e, y+s, z-e,  x+s, y+s, z-e,  x+s, y-e, z-e,  x-e, y-e, z-e,
+                   x+s, y+s, z+s,  x-e, y+s, z+s,  x-e, y-e, z+s,  x+s, y-e, z+s]
 
     return coordinates
 
@@ -96,9 +94,4 @@ def render_faces(x, y, z, faces, batch, texture_group, texture_coords):
     if face_final:
         batch_pos = batch.add(int(len(face_final)/3), pyglet.gl.GL_QUADS, texture_group, ('v3f', face_final), ('t2f', texture_final))
         return batch_pos
-
     return None
-
-
-
-

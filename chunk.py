@@ -59,13 +59,9 @@ class Chunk:
                 return True
         return False
 
-    # TODO - Would be quicker on generation to add all faces to an array
-    # TODO - and move all to a batch at the end of genreation
-    # TODO - Can this be reduced like check_exposed_face
     def create_exposed_face(self, x, y, z):
         texture_coords = self.textures.get_texture(self.blocks[(x, y, z)].block_id)
         faces = []
-        # TODO - Using world.find_block will be slower than checking if the block is an edge case
 
         if not self.world.find_block((x, y+1, z)):
             faces.append(0)
@@ -73,6 +69,7 @@ class Chunk:
         # Check y != 0 first, as this is a quicker call than find_block
         if y != 0 and not self.world.find_block((x, y-1, z)):
             faces.append(1)
+
         if not self.world.find_block((x+1, y, z)):
             faces.append(2)
         if not self.world.find_block((x-1, y, z)):

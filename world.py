@@ -2,7 +2,6 @@ import math
 import Queue
 import thread
 
-
 import noise
 
 import chunk
@@ -23,8 +22,9 @@ class World:
         self._loaded_position = None
 
         # Chunks around the player to generate
-        self.generate_distance = 1
         self.render_distance = 1
+        self.generate_distance = 1
+
         self.chunks = {}
         self.surface = {}
 
@@ -37,10 +37,9 @@ class World:
         self._loaded_position = chunk.find_chunk_coords(position)
 
         for x in range(self._loaded_position[0]-self.generate_distance, self._loaded_position[0] + self.generate_distance):
-            for z in range(self._loaded_position[2]-self.generate_distance, self._loaded_position[2] +self.generate_distance):
+            for z in range(self._loaded_position[2]-self.generate_distance, self._loaded_position[2] + self.generate_distance):
                 if (x, 0, z) not in self.chunks:
                     self.generate_surface(x, z)
-                    # TODO - What is this doing?
                     max_y_chunk = self._loaded_position[1] + self.generate_distance
                     for y in range(max_y_chunk):
                         if (x, y, z) not in self.chunks:
@@ -92,9 +91,7 @@ class World:
     def generate_block_faces(self):
         # Throttle the generation of the blocks, so that the game doesn't hang
 
-        # TODO - This could be more efficient
         # TODO - Could throttle differently depending on distance to the player
-
         # Do a 3 stage render, based on distance from player. This should reduce the load on the computer
         # Could we also pass the generate to another thread, Maybe make queue unique to chunks
         # Could get messy if we need to keep checking the world to see if it needs generating
@@ -122,10 +119,10 @@ class World:
     def create_block(self, coords, block_id):
         chunk_coords = (int(math.floor(coords[0]/16)), int(math.floor(coords[1]/16)), int(math.floor(coords[2]/16)))
         if chunk_coords in self.chunks:
-            chunk = self.chunks[chunk_coords]
+            _chunk = self.chunks[chunk_coords]
             # Find block coordinates local to chunk
             block_coords = coords
-            chunk.create_block(block_coords, block_id)
+            _chunk.create_block(block_coords, block_id)
 
     def find_block(self, coords):
         block_found = False
@@ -148,4 +145,3 @@ class World:
         if current_chunk != self.current_centered_chunk:
             self.current_centered_chunk = current_chunk
             self.generate_world(coords)
-

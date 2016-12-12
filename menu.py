@@ -19,7 +19,6 @@ class MenuController:
         self.action_bar.update_active_item(active_item)
 
 
-# TODO - Have class for each action bar item
 class ActionBar:
     def __init__(self, game_textures):
         self.game_textures = game_textures
@@ -27,6 +26,7 @@ class ActionBar:
         self.active_item = 1
         self.item_rotate = 0
         self.action_bar_position = [-6.5, -6.0, -8.0]
+        self.action_bar_items = []
 
         self.initialise_action_bar_items()
 
@@ -47,7 +47,6 @@ class ActionBar:
         self.item_rotate += 1.5
 
     def initialise_action_bar_items(self):
-        self.action_bar_items = []
         # Base voxel for the action bar
         voxel = block.cube_coordinates((0, 0, 0), 1.0)
         for i in range(5):

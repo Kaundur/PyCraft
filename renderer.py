@@ -26,15 +26,6 @@ class Renderer:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
-    def toggle_fullscreen(self):
-        self.full_screen = not self.full_screen
-        if self.full_screen:
-            self.game.set_fullscreen(self.full_screen)
-            self.toggle_full_screen()
-        else:
-            # Move gl window so terminal in pycharm is visible
-            self.game.set_location(500, 50)
-
     def set_3d(self):
         width, height = self.game.get_size()
         glEnable(GL_DEPTH_TEST)
@@ -71,4 +62,3 @@ def draw_crosshair(coords):
     pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords[0],         coords[1]+c_width]))
     pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords[0]-c_width, coords[1]]))
     pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ('v2i', [coords[0]+c_width, coords[1]]))
-

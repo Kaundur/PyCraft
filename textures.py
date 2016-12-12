@@ -41,15 +41,12 @@ class Textures:
         return voxel_texture
 
     def _get_texture(self, top, bottom, sides):
-        texture_coords = []
-        texture_coords.append(self.texture_face_coord(top[0], top[1]))
-        texture_coords.append(self.texture_face_coord(bottom[0], bottom[1]))
-        texture_coords.append(self.texture_face_coord(sides[0], sides[1]))
-        texture_coords.append(self.texture_face_coord(sides[0], sides[1]))
-        texture_coords.append(self.texture_face_coord(sides[0], sides[1]))
-        texture_coords.append(self.texture_face_coord(sides[0], sides[1]))
-
-        return texture_coords
+        return [self.texture_face_coord(top[0], top[1]),
+                self.texture_face_coord(bottom[0], bottom[1]),
+                self.texture_face_coord(sides[0], sides[1]),
+                self.texture_face_coord(sides[0], sides[1]),
+                self.texture_face_coord(sides[0], sides[1]),
+                self.texture_face_coord(sides[0], sides[1])]
 
     def texture_face_coord(self, x, y):
         dx = 1.0/self.texture_pixel_size_x

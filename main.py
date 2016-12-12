@@ -14,7 +14,6 @@ FRAMES_PER_SECOND = 30
 
 class Game(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
-        # TODO - How does this super work, overrides the init of Window
         super(Game, self).__init__(*args, **kwargs)
 
         # Will need updating if the screen size changes
@@ -44,7 +43,6 @@ class Game(pyglet.window.Window):
         self.game_state = None
         self.in_menu = False
 
-    # TODO - Key handing should be passed to player here
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
             self.exit_game()
@@ -79,7 +77,6 @@ class Game(pyglet.window.Window):
 
         self.render.set_2d()
 
-        # TODO - Should package crosshair, actionbar together into gui class
         renderer.draw_crosshair(self.cursor_coordinates)
 
     @staticmethod

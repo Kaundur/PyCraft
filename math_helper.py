@@ -70,8 +70,9 @@ def los_collision(world, position, sight_vector):
 
                 # If a collision hasn't occurred, Set the previous block position as the current position
                 previous_block = (math.floor(sight_position_x),
-                                             math.floor(sight_position_y),
-                                             math.floor(sight_position_z))
+                                  math.floor(sight_position_y),
+                                  math.floor(sight_position_z))
+
                 sight_position_x += step_vector[0]
                 sight_position_y += step_vector[1]
                 sight_position_z += step_vector[2]
