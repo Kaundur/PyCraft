@@ -22,7 +22,7 @@ class World:
         self._loaded_position = None
 
         # Chunks around the player to generate
-        self.render_distance = 1
+        self.render_distance = 2
         self.generate_distance = self.render_distance+1
 
         self.chunks = {}
